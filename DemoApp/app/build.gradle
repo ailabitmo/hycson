@@ -12,6 +12,8 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        vectorDrawables.useSupportLibrary = true
+
         // sensitive data stored in gradle.properties and not under version control
         buildConfigField "String", "VK_API_KEY", project.getProperty('vk_api_key')
         buildConfigField "String", "VK_API_SECRET", project.getProperty('vk_api_secret')

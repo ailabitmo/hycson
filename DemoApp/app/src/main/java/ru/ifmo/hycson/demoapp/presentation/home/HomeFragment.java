@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import javax.inject.Inject;
@@ -23,7 +24,11 @@ public class HomeFragment extends Fragment {
 
     @Inject
     PreferencesManager mPreferencesManager;
+
     private TextView mGreetingTextView;
+    private TextView mTextView;
+    private ImageView mIconView;
+    private View mLoginLogoutView;
 
     public static Fragment newInstance() {
         return new HomeFragment();
@@ -34,6 +39,9 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         mGreetingTextView = (TextView) view.findViewById(R.id.greetingTextView);
+        mLoginLogoutView = view.findViewById(R.id.logInLogOutView);
+        mTextView = (TextView) mLoginLogoutView.findViewById(R.id.textView);
+        mIconView = (ImageView) mLoginLogoutView.findViewById(R.id.iconView);
         return view;
     }
 
@@ -43,12 +51,8 @@ public class HomeFragment extends Fragment {
         App.getApp(getContext()).getAppComponent().inject(this);
 
         String vkAccessToken = mPreferencesManager.retrieveVKAccessToken();
-        if (TextUtils.isEmpty(vkAccessToken)) {
-            Intent startIntent = AuthActivity.prepareStartIntent(getContext());
-            startActivityForResult(startIntent, AUTH_REQUEST_CODE);
-        } else {
-            mGreetingTextView.setText(R.string.vk_auth_greeting);
-        }
+        boolean userLoggedIn = !TextUtils.isEmpty(vkAccessToken);
+        setupViews(userLoggedIn);
     }
 
     @Override
@@ -56,10 +60,40 @@ public class HomeFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == AUTH_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                mGreetingTextView.setText(R.string.vk_auth_greeting);
+                setupViews(true);
             } else {
                 mGreetingTextView.setText(R.string.auth_failed);
             }
         }
+    }
+
+    private void setClickListener(final boolean userLoggedIn, View view) {
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (userLoggedIn) {
+                    mPreferencesManager.saveVKAccessToken("");
+                    mGreetingTextView.setVisibility(View.GONE);
+                    setupViews(false);
+                } else {
+                    Intent startIntent = AuthActivity.prepareStartIntent(getContext());
+                    startActivityForResult(startIntent, AUTH_REQUEST_CODE);
+                }
+            }
+        });
+    }
+
+    private void setupViews(boolean userLoggedIn) {
+        if (userLoggedIn) {
+            mGreetingTextView.setVisibility(View.VISIBLE);
+            mGreetingTextView.setText(R.string.vk_auth_greeting);
+            mTextView.setText(R.string.logout);
+            mIconView.setImageResource(R.drawable.ic_24dp_logout);
+        } else {
+            mTextView.setText(R.string.login);
+            mIconView.setImageResource(R.drawable.ic_24dp_login);
+        }
+
+        setClickListener(userLoggedIn, mLoginLogoutView);
     }
 }

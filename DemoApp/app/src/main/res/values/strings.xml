@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DemoApp</string>
+    <string name="vk_auth_greeting">Hello authenticated VK user!</string>
+    <string name="auth_failed">Authentication failed.</string>
 </resources>

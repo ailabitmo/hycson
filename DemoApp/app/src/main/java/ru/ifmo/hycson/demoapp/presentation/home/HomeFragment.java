@@ -1,10 +1,12 @@
 package ru.ifmo.hycson.demoapp.presentation.home;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +19,13 @@ import javax.inject.Inject;
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
 import ru.ifmo.hycson.demoapp.data.PreferencesManager;
-import ru.ifmo.hycson.demoapp.presentation.auth.AuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
 
 public class HomeFragment extends Fragment {
-    private static final int AUTH_REQUEST_CODE = 1;
+    private static final int VK_AUTH_REQUEST_CODE = 0;
+    private static final int TWITTER_AUTH_REQUEST_CODE = 1;
 
     @Inject
     PreferencesManager mPreferencesManager;
@@ -50,43 +55,82 @@ public class HomeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         App.getApp(getContext()).getAppComponent().inject(this);
 
-        String vkAccessToken = mPreferencesManager.retrieveVKAccessToken();
-        boolean userLoggedIn = !TextUtils.isEmpty(vkAccessToken);
-        setupViews(userLoggedIn);
+        AuthStatus authStatus = AuthStatus.NOT_AUTH;
+        if (!TextUtils.isEmpty(mPreferencesManager.retrieveVKAccessToken())) {
+            authStatus = AuthStatus.VK;
+        } else if (!TextUtils.isEmpty(mPreferencesManager.retrieveTwitterAccessToken())) {
+            authStatus = AuthStatus.TWITTER;
+        }
+
+        setupViews(authStatus);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == AUTH_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                setupViews(true);
+        if (resultCode != Activity.RESULT_OK) {
+            mGreetingTextView.setText(R.string.auth_failed);
+        } else {
+            String accessToken = data.getStringExtra(BaseAuthActivity.EXTRA_ACCESS_TOKEN);
+            if (requestCode == VK_AUTH_REQUEST_CODE) {
+                mPreferencesManager.saveVKAccessToken(accessToken);
+                setupViews(AuthStatus.VK);
             } else {
-                mGreetingTextView.setText(R.string.auth_failed);
+                mPreferencesManager.saveTwitterAccessToken(accessToken);
+                setupViews(AuthStatus.TWITTER);
             }
         }
     }
 
-    private void setClickListener(final boolean userLoggedIn, View view) {
+    private void setupClickListener(final AuthStatus authStatus, View view) {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (userLoggedIn) {
-                    mPreferencesManager.saveVKAccessToken("");
+                if (authStatus != AuthStatus.NOT_AUTH) {
+                    if (authStatus == AuthStatus.VK) {
+                        mPreferencesManager.saveVKAccessToken("");
+                    } else {
+                        mPreferencesManager.saveTwitterAccessToken("");
+                    }
                     mGreetingTextView.setVisibility(View.GONE);
-                    setupViews(false);
+                    setupViews(AuthStatus.NOT_AUTH);
                 } else {
-                    Intent startIntent = AuthActivity.prepareStartIntent(getContext());
-                    startActivityForResult(startIntent, AUTH_REQUEST_CODE);
+                    showDialog();
                 }
             }
         });
     }
 
-    private void setupViews(boolean userLoggedIn) {
-        if (userLoggedIn) {
+    private void showDialog() {
+        AlertDialog alertDialog = new AlertDialog
+                .Builder(getContext())
+                .create();
+
+        alertDialog.setTitle("VK or Twitter?");
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "VK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        Intent startIntent = VKAuthActivity.prepareStartIntent(getContext());
+                        startActivityForResult(startIntent, VK_AUTH_REQUEST_CODE);
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "TWITTER",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        Intent startIntent = TwitterAuthActivity.prepareStartIntent(getContext());
+                        startActivityForResult(startIntent, TWITTER_AUTH_REQUEST_CODE);
+                    }
+                });
+
+        alertDialog.show();
+    }
+
+    private void setupViews(AuthStatus authStatus) {
+        if (authStatus != AuthStatus.NOT_AUTH) {
             mGreetingTextView.setVisibility(View.VISIBLE);
-            mGreetingTextView.setText(R.string.vk_auth_greeting);
+            mGreetingTextView.setText(authStatus == AuthStatus.VK ? R.string.vk_auth_greeting : R.string.twitter_auth_greeting);
             mTextView.setText(R.string.logout);
             mIconView.setImageResource(R.drawable.ic_24dp_logout);
         } else {
@@ -94,6 +138,10 @@ public class HomeFragment extends Fragment {
             mIconView.setImageResource(R.drawable.ic_24dp_login);
         }
 
-        setClickListener(userLoggedIn, mLoginLogoutView);
+        setupClickListener(authStatus, mLoginLogoutView);
+    }
+
+    enum AuthStatus {
+        VK, TWITTER, NOT_AUTH
     }
 }

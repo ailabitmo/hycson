@@ -19,7 +19,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".presentation.auth.AuthActivity"/>
+        <activity android:name=".presentation.auth.VKAuthActivity"/>
+        <activity android:name=".presentation.auth.TwitterAuthActivity"/>
 
     </application>
 </manifest>

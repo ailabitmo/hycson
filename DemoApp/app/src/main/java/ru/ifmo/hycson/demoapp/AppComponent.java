@@ -4,7 +4,9 @@ import javax.inject.Singleton;
 
 import dagger.Component;
 import ru.ifmo.hycson.demoapp.data.OAuthModule;
-import ru.ifmo.hycson.demoapp.presentation.auth.AuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.home.HomeFragment;
 
 
@@ -18,5 +20,9 @@ import ru.ifmo.hycson.demoapp.presentation.home.HomeFragment;
 public interface AppComponent {
     void inject(HomeFragment mainFragment);
 
-    void inject(AuthActivity authActivity);
+    void inject(VKAuthActivity vkAuthActivity);
+
+    void inject(TwitterAuthActivity twitterAuthActivity);
+
+    void inject(BaseAuthActivity baseAuthActivity);
 }

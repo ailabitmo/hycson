@@ -18,6 +18,10 @@ android {
         buildConfigField "String", "VK_API_KEY", project.getProperty('vk_api_key')
         buildConfigField "String", "VK_API_SECRET", project.getProperty('vk_api_secret')
         buildConfigField "String", "VK_API_CALLBACK_URI", project.getProperty('vk_api_callback_url')
+
+        buildConfigField "String", "TWITTER_API_KEY", project.getProperty('twitter_api_key')
+        buildConfigField "String", "TWITTER_API_SECRET", project.getProperty('twitter_api_secret')
+        buildConfigField "String", "TWITTER_API_CALLBACK_URI", project.getProperty('twitter_api_callback_url')
     }
     buildTypes {
         release {

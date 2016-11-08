@@ -1,7 +1,9 @@
 package ru.ifmo.hycson.demoapp.data;
 
+import com.github.scribejava.apis.TwitterApi;
 import com.github.scribejava.apis.VkontakteApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import dagger.Module;
@@ -21,5 +23,15 @@ public class OAuthModule {
                 .callback(BuildConfig.VK_API_CALLBACK_URI)
                 .scope("wall,friends")
                 .build(VkontakteApi.instance());
+    }
+
+    @Provides
+    OAuth10aService provideTwitterOAuth10aService() {
+        LogHelper.d(LogHelper.TAG_MODULE, this.getClass().getSimpleName() + ".provideTwitterOAuth10aService");
+        return new ServiceBuilder()
+                .apiKey(BuildConfig.TWITTER_API_KEY)
+                .apiSecret(BuildConfig.TWITTER_API_SECRET)
+                .callback(BuildConfig.TWITTER_API_CALLBACK_URI)
+                .build(TwitterApi.instance());
     }
 }

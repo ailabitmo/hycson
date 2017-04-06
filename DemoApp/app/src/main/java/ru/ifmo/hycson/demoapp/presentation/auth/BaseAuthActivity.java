@@ -66,7 +66,9 @@ public abstract class BaseAuthActivity extends BaseActivity {
             }
         });
 
-        return observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+        return observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     protected void handleUnsuccessfulResult() {

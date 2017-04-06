@@ -17,11 +17,20 @@ import android.widget.TextView;
 import javax.inject.Inject;
 
 import ru.ifmo.hycson.demoapp.App;
+import ru.ifmo.hycson.demoapp.BuildConfig;
 import ru.ifmo.hycson.demoapp.R;
+import ru.ifmo.hycson.demoapp.data.ApiService;
 import ru.ifmo.hycson.demoapp.data.PreferencesManager;
 import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
+import ru.ifmo.hymp.HydraMessageParser;
+import ru.ifmo.hymp.Parser;
+import ru.ifmo.hymp.entities.Resource;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 
 public class HomeFragment extends Fragment {
     private static final int VK_AUTH_REQUEST_CODE = 0;
@@ -29,6 +38,9 @@ public class HomeFragment extends Fragment {
 
     @Inject
     PreferencesManager mPreferencesManager;
+
+    @Inject
+    ApiService mApiService;
 
     private TextView mGreetingTextView;
     private TextView mTextView;
@@ -39,30 +51,64 @@ public class HomeFragment extends Fragment {
         return new HomeFragment();
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        App.getApp(getContext()).getAppComponent().inject(this);
+    }
+
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        return inflater.inflate(R.layout.fragment_main, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mGreetingTextView = (TextView) view.findViewById(R.id.greetingTextView);
         mLoginLogoutView = view.findViewById(R.id.logInLogOutView);
         mTextView = (TextView) mLoginLogoutView.findViewById(R.id.textView);
         mIconView = (ImageView) mLoginLogoutView.findViewById(R.id.iconView);
-        return view;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        App.getApp(getContext()).getAppComponent().inject(this);
 
-        AuthStatus authStatus = AuthStatus.NOT_AUTH;
+        AuthStatus authStatus;
         if (!TextUtils.isEmpty(mPreferencesManager.retrieveVKAccessToken())) {
             authStatus = AuthStatus.VK;
         } else if (!TextUtils.isEmpty(mPreferencesManager.retrieveTwitterAccessToken())) {
             authStatus = AuthStatus.TWITTER;
+        } else {
+            authStatus = AuthStatus.NOT_AUTH;
         }
 
         setupViews(authStatus);
+
+        Parser parser = new HydraMessageParser(BuildConfig.VK_ENTRY_POINT);
+//        String url = "/api/vk/person/638865"; // person profile
+        String url = ""; // entry point
+        parser.loadAndParseResource(url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Resource>() {
+                    @Override
+                    public void onCompleted() {
+                        int a = 5;
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        int a = 5;
+                    }
+
+                    @Override
+                    public void onNext(Resource resource) {
+                        int a = 5;
+                    }
+                });
     }
 
     @Override
@@ -141,7 +187,7 @@ public class HomeFragment extends Fragment {
         setupClickListener(authStatus, mLoginLogoutView);
     }
 
-    enum AuthStatus {
+    private enum AuthStatus {
         VK, TWITTER, NOT_AUTH
     }
 }

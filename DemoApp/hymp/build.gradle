@@ -1,0 +1,18 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // retrofit (A type-safe HTTP client for Android and Java)
+    def retrofit2Version = '2.2.0'
+    compile "com.squareup.retrofit2:retrofit:$retrofit2Version"
+    compile "com.squareup.retrofit2:adapter-rxjava:$retrofit2Version"
+    compile "com.squareup.retrofit2:converter-gson:$retrofit2Version"
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"

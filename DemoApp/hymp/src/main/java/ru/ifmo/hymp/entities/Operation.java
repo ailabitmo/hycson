@@ -1,23 +1,37 @@
 package ru.ifmo.hymp.entities;
 
 public class Operation {
-    private String entityType;
-    private Type operationType;
+    private Type type;
+    private String expects;
+    private String returns;
 
-    public Operation(String entityType, Type operationType) {
-        this.entityType = entityType;
-        this.operationType = operationType;
+    public Operation(Type type) {
+        this.type = type;
     }
 
-    public String getEntityType() {
-        return entityType;
+    public Operation(Type type, String returns) {
+        this.type = type;
+        this.returns = returns;
     }
 
-    public Type getOperationType() {
-        return operationType;
+    public Operation(Type type, String expects, String returns) {
+        this(type, returns);
+        this.expects = expects;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public String getExpects() {
+        return expects;
+    }
+
+    public String getReturns() {
+        return returns;
     }
 
     public enum Type {
-        GET, POST, PUT, DELETE;
+        GET, POST, UNKNOWN;
     }
 }

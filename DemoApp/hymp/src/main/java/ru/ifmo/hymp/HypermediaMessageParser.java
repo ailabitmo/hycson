@@ -4,26 +4,38 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import okhttp3.Headers;
 import retrofit2.adapter.rxjava.Result;
 import ru.ifmo.hymp.entities.Link;
-import ru.ifmo.hymp.entities.Property;
+import ru.ifmo.hymp.entities.Operation;
 import ru.ifmo.hymp.entities.Resource;
 import ru.ifmo.hymp.net.ApiClient;
+import ru.ifmo.hymp.utils.JsonUtils;
 import ru.ifmo.hymp.utils.StringUtils;
 import ru.ifmo.hymp.utils.rx.NetworkResultTransformer;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
-public class HydraMessageParser implements Parser {
+/**
+ * This class responsible for loading and parsing messages from API that supports:
+ * <p>
+ * Hydra core vocabulary:
+ *
+ * @see <a href="http://www.hydra-cg.com/</a>
+ * and JSON-LD:
+ * @see <a href="https://www.w3.org/TR/json-ld/</a>
+ */
+public class HypermediaMessageParser implements Parser {
     private static final String HEADER_LINK = "Link";
     private static final String HEADER_LINK_API_DOC = "rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"";
 
-    public HydraMessageParser(String entryPoint) {
+    public HypermediaMessageParser(String entryPoint) {
         ApiClient.initApiService(entryPoint);
     }
 
@@ -31,8 +43,8 @@ public class HydraMessageParser implements Parser {
      * Load resource from API and parse to {@link Resource} - internal resource representation
      * <p>
      * 1. Load resource from API using url param
-     * 2. Extract Link header from response and load ApiDoc
-     * 3. Load @context for resource
+     * 2. Extract Link header from response
+     * 3. Load @context for resource and api documentation
      * 4. Parse resource to internal representation
      *
      * @param url that point to resource
@@ -155,16 +167,51 @@ public class HydraMessageParser implements Parser {
                 }
 
                 if (apiDocPropertyObject.get("@type").getAsString().equals("rdf:Property")) {
-                    Property property = new Property(resPropertyValue.getAsString());
-                    internalRes.getPropertyMap().put(apiDocProperty, property);
+                    internalRes.getPropertyMap().put(apiDocProperty, resPropertyValue.getAsString());
                 } else if (apiDocPropertyObject.get("@type").getAsString().equals("hydra:Link")) {
-                    Link link = new Link(resPropertyValue.getAsString());
+                    List<Operation> operations = getOperationsFromApiDocProperty(apiDocPropertyObject);
+                    Link link = new Link(resPropertyValue.getAsString(), operations);
                     internalRes.getLinks().add(link);
                 }
             }
         }
 
         return internalRes;
+    }
+
+    /**
+     * Extract all available operations  for specific property from api doc
+     *
+     * @param apiDocPropertyObject Api doc property object
+     * @return all available operations  for specific property
+     */
+    private List<Operation> getOperationsFromApiDocProperty(JsonObject apiDocPropertyObject) {
+        List<Operation> operations = new ArrayList<>();
+
+        JsonArray supportedOperations = apiDocPropertyObject.getAsJsonArray("hydra:supportedOperation");
+        for (JsonElement supportedOperation : supportedOperations) {
+            JsonObject operationObject = (JsonObject) supportedOperation;
+            String method = operationObject.get("hydra:method").getAsString();
+            String expects = JsonUtils.getMemberAsStringNullSafety(operationObject, "expects");
+            String returns = JsonUtils.getMemberAsStringNullSafety(operationObject, "returns");
+
+            Operation.Type type = Operation.Type.valueOf(method);
+            Operation operation;
+            switch (type) {
+                case GET:
+                    operation = new Operation(type, returns);
+                    break;
+                case POST:
+                    operation = new Operation(type, expects, returns);
+                    break;
+                default:
+                    operation = new Operation(Operation.Type.UNKNOWN);
+            }
+
+            operations.add(operation);
+        }
+
+        return operations;
     }
 
     /**

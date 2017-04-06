@@ -8,7 +8,7 @@ import java.util.Map;
 public class Resource {
     private String id;
     private String type;
-    private Map<String, Property> propertyMap = new HashMap<>(4);
+    private Map<String, Object> propertyMap = new HashMap<>(4);
     private List<Link> links = new ArrayList<>();
 
     public Resource(String id, String type) {
@@ -20,31 +20,16 @@ public class Resource {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Map<String, Property> getPropertyMap() {
+    public Map<String, Object> getPropertyMap() {
         return propertyMap;
-    }
-
-    public void setPropertyMap(Map<String, Property> propertyMap) {
-        this.propertyMap = propertyMap;
     }
 
     public List<Link> getLinks() {
         return links;
     }
 
-    public void setLinks(List<Link> links) {
-        this.links = links;
-    }
 }

@@ -24,7 +24,7 @@ import ru.ifmo.hycson.demoapp.data.PreferencesManager;
 import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
-import ru.ifmo.hymp.HydraMessageParser;
+import ru.ifmo.hymp.HypermediaMessageParser;
 import ru.ifmo.hymp.Parser;
 import ru.ifmo.hymp.entities.Resource;
 import rx.Subscriber;
@@ -87,9 +87,9 @@ public class HomeFragment extends Fragment {
 
         setupViews(authStatus);
 
-        Parser parser = new HydraMessageParser(BuildConfig.VK_ENTRY_POINT);
-//        String url = "/api/vk/person/638865"; // person profile
-        String url = ""; // entry point
+        Parser parser = new HypermediaMessageParser(BuildConfig.VK_ENTRY_POINT);
+        String url = "/api/vk/person/638865"; // person profile
+//        String url = ""; // entry point
         parser.loadAndParseResource(url)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

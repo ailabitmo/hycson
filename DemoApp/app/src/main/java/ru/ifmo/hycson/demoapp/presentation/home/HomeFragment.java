@@ -88,7 +88,8 @@ public class HomeFragment extends Fragment {
         setupViews(authStatus);
 
         Parser parser = new HypermediaMessageParser(BuildConfig.VK_ENTRY_POINT);
-        String url = "/api/vk/person/638865"; // person profile
+        String url = "/api/vk/person/638865/friends";
+//        String url = "/api/vk/person/638865"; // person profile
 //        String url = ""; // entry point
         parser.loadAndParseResource(url)
                 .subscribeOn(Schedulers.io())

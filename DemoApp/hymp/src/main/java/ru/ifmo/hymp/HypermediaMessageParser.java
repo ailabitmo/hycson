@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import ru.ifmo.hymp.utils.JsonUtils;
 import ru.ifmo.hymp.utils.StringUtils;
 import ru.ifmo.hymp.utils.rx.NetworkResultTransformer;
 import rx.Observable;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
@@ -34,6 +36,9 @@ import rx.functions.Func2;
 public class HypermediaMessageParser implements Parser {
     private static final String HEADER_LINK = "Link";
     private static final String HEADER_LINK_API_DOC = "rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"";
+
+    // simple cache for context json objects
+    private static Map<String, JsonObject> contextCache = new HashMap<>(2);
 
     public HypermediaMessageParser(String entryPoint) {
         ApiClient.initApiService(entryPoint);
@@ -60,10 +65,9 @@ public class HypermediaMessageParser implements Parser {
                         final JsonObject res = resResult.response().body();
 
                         return Observable.zip(loadContextForResource(res), loadApiDoc(headers),
-                                new Func2<Result<JsonObject>, Result<JsonObject>, Bundle>() {
+                                new Func2<JsonObject, Result<JsonObject>, Bundle>() {
                                     @Override
-                                    public Bundle call(Result<JsonObject> contextRes, Result<JsonObject> apiDocRes) {
-                                        JsonObject context = contextRes.response().body();
+                                    public Bundle call(JsonObject context, Result<JsonObject> apiDocRes) {
                                         JsonObject apiDoc = apiDocRes.response().body();
                                         return new Bundle(res, context, apiDoc);
                                     }
@@ -117,62 +121,89 @@ public class HypermediaMessageParser implements Parser {
      * @param res for with @context loads
      * @return {@link Observable} with @context that represents as {@link JsonObject}
      */
-    private Observable<Result<JsonObject>> loadContextForResource(JsonObject res) {
-        String contextUrl = res.get("@context").getAsString();
+    private Observable<JsonObject> loadContextForResource(JsonObject res) {
+        final String contextUrl = res.get("@context").getAsString();
         if (StringUtils.isEmpty(contextUrl)) {
             throw new RuntimeException("@context link is empty");
         }
 
+        if (contextCache.containsKey(contextUrl)) {
+            return Observable.just(contextCache.get(contextUrl));
+        }
+
         return ApiClient.getApiService().load(contextUrl)
-                .compose(new NetworkResultTransformer());
+                .compose(new NetworkResultTransformer())
+                .map(new Func1<Result<JsonObject>, JsonObject>() {
+                    @Override
+                    public JsonObject call(Result<JsonObject> result) {
+                        return result.response().body();
+                    }
+                })
+                .doOnNext(new Action1<JsonObject>() {
+                    @Override
+                    public void call(JsonObject context) {
+                        contextCache.put(contextUrl, context);
+                    }
+                });
     }
 
     private Resource parseToInternalResource(Bundle bundle) {
         JsonObject res = bundle.res;
-        JsonObject context = bundle.context;
         JsonObject apiDoc = bundle.apiDoc;
+        JsonObject context = bundle.context;
+        if (context == null) {
+            context = loadContextForResource(res)
+                    .toBlocking()
+                    .single();
+        }
 
-        // define resource type and id
         String resId = res.get("@id").getAsString();
         String resType = res.get("@type").getAsString();
-
-        // create internal resource that represent api resource
-        Resource internalRes = new Resource(resId, resType);
-
-        JsonObject apiDocClass = getSupportedClassFromApiDoc(apiDoc, resType);
-        if (apiDocClass == null) {
+        JsonObject resClass = getResClassFromApiDoc(apiDoc, resType);
+        if (resClass == null) {
             throw new RuntimeException("Class with id: " + resType + " not found");
         }
 
-        boolean resSubClassOfCollection = isResSubClassOfCollection(apiDocClass);
+        // create internal resource representation
+        Resource internalRes = new Resource(resId, resType);
 
-        if (!resSubClassOfCollection) {
-            Set<Map.Entry<String, JsonElement>> terms = context.getAsJsonObject("@context").entrySet();
-            for (Map.Entry<String, JsonElement> term : terms) {
-                String resProperty = term.getKey();
-                if (resProperty.startsWith("@") || resProperty.equals("hydra")) {
-                    continue;
+        Set<Map.Entry<String, JsonElement>> terms = context.getAsJsonObject("@context").entrySet();
+        for (Map.Entry<String, JsonElement> term : terms) {
+            String termPropertyKey = term.getKey();
+            String termPropertyValue = getContextTermValue(term.getValue());
+
+            if (termPropertyKey.startsWith("@") || termPropertyKey.equals("hydra")) {
+                continue;
+            }
+
+            JsonElement resPropertyValue = getResourcePropertyValue(res, termPropertyKey);
+            if (resPropertyValue == null) {
+                continue;
+            }
+
+            if (resPropertyValue.isJsonArray() && isResSubClassOfCollection(resClass)) {
+                JsonArray members = resPropertyValue.getAsJsonArray();
+                List<Resource> memberResources = new ArrayList<>();
+                for (JsonElement member : members) {
+                    Resource memberRes = parseToInternalResource(new Bundle(member.getAsJsonObject(), null, apiDoc));
+                    memberResources.add(memberRes);
                 }
 
-                JsonElement resPropertyValue = getResourcePropertyValue(res, resProperty);
-                if (resPropertyValue == null) {
-                    continue;
-                }
+                internalRes.getPropertyMap().put(termPropertyValue, memberResources);
+                continue;
+            }
 
-                String apiDocProperty = getContextTermValue(term.getValue());
+            JsonObject classProperty = getPropertyFromClass(resClass, termPropertyValue);
+            if (classProperty == null) {
+                throw new RuntimeException("Not found supported property with termPropertyValue: " + termPropertyValue);
+            }
 
-                JsonObject apiDocPropertyObject = getSupportedPropertyFromApiDocClass(apiDocClass, apiDocProperty);
-                if (apiDocPropertyObject == null) {
-                    throw new RuntimeException("Can not find supported property with id: " + apiDocProperty);
-                }
-
-                if (apiDocPropertyObject.get("@type").getAsString().equals("rdf:Property")) {
-                    internalRes.getPropertyMap().put(apiDocProperty, resPropertyValue.getAsString());
-                } else if (apiDocPropertyObject.get("@type").getAsString().equals("hydra:Link")) {
-                    List<Operation> operations = getOperationsFromApiDocProperty(apiDocPropertyObject);
-                    Link link = new Link(resPropertyValue.getAsString(), operations);
-                    internalRes.getLinks().add(link);
-                }
+            if (classProperty.get("@type").getAsString().equals("rdf:Property")) {
+                internalRes.getPropertyMap().put(termPropertyValue, resPropertyValue.getAsString());
+            } else if (classProperty.get("@type").getAsString().equals("hydra:Link")) {
+                List<Operation> linkOperations = getOperationsFromClassPropery(classProperty);
+                Link link = new Link(resPropertyValue.getAsString(), linkOperations);
+                internalRes.getLinks().add(link);
             }
         }
 
@@ -185,7 +216,7 @@ public class HypermediaMessageParser implements Parser {
      * @param apiDocPropertyObject Api doc property object
      * @return all available operations  for specific property
      */
-    private List<Operation> getOperationsFromApiDocProperty(JsonObject apiDocPropertyObject) {
+    private List<Operation> getOperationsFromClassPropery(JsonObject apiDocPropertyObject) {
         List<Operation> operations = new ArrayList<>();
 
         JsonArray supportedOperations = apiDocPropertyObject.getAsJsonArray("hydra:supportedOperation");
@@ -272,7 +303,7 @@ public class HypermediaMessageParser implements Parser {
      * @param resType resource type for with class will be found
      * @return api doc class for resource or null
      */
-    private JsonObject getSupportedClassFromApiDoc(JsonObject apiDoc, String resType) {
+    private JsonObject getResClassFromApiDoc(JsonObject apiDoc, String resType) {
         JsonArray supportedClasses = apiDoc.getAsJsonArray("hydra:supportedClass");
         for (JsonElement supportedClass : supportedClasses) {
             if (supportedClass.isJsonObject()) {
@@ -292,7 +323,7 @@ public class HypermediaMessageParser implements Parser {
      * @param property    property name for with property will be found
      * @return property or null
      */
-    private JsonObject getSupportedPropertyFromApiDocClass(JsonObject apiDocClass, String property) {
+    private JsonObject getPropertyFromClass(JsonObject apiDocClass, String property) {
         JsonArray supportedProperties = apiDocClass.getAsJsonArray("hydra:supportedProperty");
         for (JsonElement supportedProperty : supportedProperties) {
             if (supportedProperty.isJsonObject()) {

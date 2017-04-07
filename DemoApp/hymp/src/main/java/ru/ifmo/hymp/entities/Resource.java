@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Internal representation of Hypermedia API resource
+ */
 public class Resource {
     private String id;
     private String type;

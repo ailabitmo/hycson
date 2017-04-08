@@ -4,10 +4,12 @@ import java.util.List;
 
 public class Link {
     private String value;
+    private String title;
     private List<Operation> operations;
 
-    public Link(String value, List<Operation> operations) {
+    public Link(String value, String title, List<Operation> operations) {
         this.value = value;
+        this.title = title;
         this.operations = operations;
     }
 

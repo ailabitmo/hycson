@@ -45,8 +45,9 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Load resource from API and parse to {@link Resource} - internal resource representation
+     * Load resource from API by url and parse it to internal resource representation
      * <p>
+     * Steps:
      * 1. Load resource from API using url param
      * 2. Extract Link header from response
      * 3. Load @context for resource and api documentation
@@ -83,7 +84,7 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Load resource from api by url
+     * Load resource from API by url
      *
      * @param url that point to resource
      * @return {@link Observable} with resource that represents as {@link JsonObject}
@@ -94,10 +95,10 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Retrieve Link Header from response headers and load Api documentation
+     * Retrieve Link Header from response headers and load API documentation
      *
-     * @param headers of response
-     * @return {@link Observable} with Api doc that represents as {@link JsonObject}
+     * @param headers of last response
+     * @return {@link Observable} with  Api doc that represents as {@link JsonObject}
      */
     private Observable<Result<JsonObject>> loadApiDoc(Headers headers) {
         String linkHeader = headers.get(HEADER_LINK);
@@ -116,9 +117,10 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Retrieve @context link from resource and load @context information for resource
+     * Retrieve @context link from resource then load @context information for resource
+     * and cache it to {@link #contextCache}
      *
-     * @param res for with @context loads
+     * @param res for which @context loads
      * @return {@link Observable} with @context that represents as {@link JsonObject}
      */
     private Observable<JsonObject> loadContextForResource(JsonObject res) {
@@ -147,6 +149,12 @@ public class HypermediaMessageParser implements Parser {
                 });
     }
 
+    /**
+     * Parse API resource to internal representation using API doc and resource @context information
+     *
+     * @param bundle data object that holds refs to API resource, @context and API doc
+     * @return internal representation of resource
+     */
     private Resource parseToInternalResource(Bundle bundle) {
         JsonObject res = bundle.res;
         JsonObject apiDoc = bundle.apiDoc;
@@ -161,11 +169,13 @@ public class HypermediaMessageParser implements Parser {
         String resType = res.get("@type").getAsString();
         JsonObject resClass = getResClassFromApiDoc(apiDoc, resType);
         if (resClass == null) {
-            throw new RuntimeException("Class with id: " + resType + " not found");
+            throw new RuntimeException("Class for Resource with type: " + resType + " not found");
         }
 
+        List<Operation> resClassOperations = getOperationsForClassOrProperty(resClass);
+
         // create internal resource representation
-        Resource internalRes = new Resource(resId, resType);
+        Resource internalRes = new Resource(resId, resType, resClassOperations);
 
         Set<Map.Entry<String, JsonElement>> terms = context.getAsJsonObject("@context").entrySet();
         for (Map.Entry<String, JsonElement> term : terms) {
@@ -201,8 +211,9 @@ public class HypermediaMessageParser implements Parser {
             if (classProperty.get("@type").getAsString().equals("rdf:Property")) {
                 internalRes.getPropertyMap().put(termPropertyValue, resPropertyValue.getAsString());
             } else if (classProperty.get("@type").getAsString().equals("hydra:Link")) {
-                List<Operation> linkOperations = getOperationsFromClassPropery(classProperty);
-                Link link = new Link(resPropertyValue.getAsString(), linkOperations);
+                String linkTitle = classProperty.get("rdfs:label").getAsString();
+                List<Operation> linkOperations = getOperationsForClassOrProperty(classProperty);
+                Link link = new Link(resPropertyValue.getAsString(), linkTitle, linkOperations);
                 internalRes.getLinks().add(link);
             }
         }
@@ -211,15 +222,15 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Extract all available operations  for specific property from api doc
+     * Extract all available operations for specific class or property that describes in API doc
      *
-     * @param apiDocPropertyObject Api doc property object
-     * @return all available operations  for specific property
+     * @param classOrProperty that describes in API doc
+     * @return all available operations for specific class or property
      */
-    private List<Operation> getOperationsFromClassPropery(JsonObject apiDocPropertyObject) {
+    private List<Operation> getOperationsForClassOrProperty(JsonObject classOrProperty) {
         List<Operation> operations = new ArrayList<>();
 
-        JsonArray supportedOperations = apiDocPropertyObject.getAsJsonArray("hydra:supportedOperation");
+        JsonArray supportedOperations = classOrProperty.getAsJsonArray("hydra:supportedOperation");
         for (JsonElement supportedOperation : supportedOperations) {
             JsonObject operationObject = (JsonObject) supportedOperation;
             String method = operationObject.get("hydra:method").getAsString();
@@ -248,11 +259,11 @@ public class HypermediaMessageParser implements Parser {
     /**
      * Fetch @context term value as simple String
      * <p>
-     * Note: @ context define terms as key-value pairs.
-     * key - field name in source resource {@link JsonObject} representation,
-     * value - field name in Api documentation
+     * Note: @context define terms as key-value pairs.
+     * key - field name in source resource representation,
+     * value - field name in API documentation
      *
-     * @param contextTermValue @context term value
+     * @param contextTermValue - field value that describes in API doc
      * @return String representation of @context term value
      */
     private String getContextTermValue(JsonElement contextTermValue) {
@@ -264,21 +275,21 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Search resource property and fetch its value.
-     * Recursive method that try to find specific property of resource that could be json tree.
+     * Search resource property in source resource representation and fetch it's value.
+     * Recursive method that try to search specific property in resource that could be json tree.
      *
-     * @param res         json object for search
-     * @param resProperty to search
+     * @param res             json object for search
+     * @param termPropertyKey to search
      * @return resource property value that represents as {@link JsonElement}}
      */
-    private JsonElement getResourcePropertyValue(JsonElement res, String resProperty) {
+    private JsonElement getResourcePropertyValue(JsonElement res, String termPropertyKey) {
         if (res.isJsonObject()) {
-            JsonElement value = ((JsonObject) res).get(resProperty);
+            JsonElement value = ((JsonObject) res).get(termPropertyKey);
             if (value != null) {
                 return value;
             } else {
                 for (Map.Entry<String, JsonElement> node : ((JsonObject) res).entrySet()) {
-                    value = getResourcePropertyValue(node.getValue(), resProperty);
+                    value = getResourcePropertyValue(node.getValue(), termPropertyKey);
                     if (value != null) {
                         return value;
                     }
@@ -286,7 +297,7 @@ public class HypermediaMessageParser implements Parser {
             }
         } else if (res.isJsonArray()) {
             for (JsonElement element : ((JsonArray) res)) {
-                JsonElement value = getResourcePropertyValue(element, resProperty);
+                JsonElement value = getResourcePropertyValue(element, termPropertyKey);
                 if (value != null) {
                     return value;
                 }
@@ -297,11 +308,11 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Fetch api doc class by resource type
+     * Fetch API doc class by resource type
      *
-     * @param apiDoc  api documentation
-     * @param resType resource type for with class will be found
-     * @return api doc class for resource or null
+     * @param apiDoc  API documentation
+     * @param resType resource type for which class will be found
+     * @return API doc class for resource or null
      */
     private JsonObject getResClassFromApiDoc(JsonObject apiDoc, String resType) {
         JsonArray supportedClasses = apiDoc.getAsJsonArray("hydra:supportedClass");
@@ -317,9 +328,9 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Fetch property by property name
+     * Fetch API doc class property by property name
      *
-     * @param apiDocClass class from api documentation
+     * @param apiDocClass class from API documentation
      * @param property    property name for with property will be found
      * @return property or null
      */
@@ -337,7 +348,7 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Check is resource sub class of Collection (http://www.w3.org/ns/hydra/core#Collection)
+     * Check is resource sub class of Collection (http://www.w3.org/ns/hydra/core#Collection) or not
      *
      * @param resClass for check
      * @return true if resource sub class of Collection, false otherwise
@@ -348,7 +359,7 @@ public class HypermediaMessageParser implements Parser {
     }
 
     /**
-     * Data class that holds references for resource, @context and apiDocumentation
+     * Data class that holds references for resource, @context and API documentation
      */
     private static class Bundle {
         private final JsonObject res;

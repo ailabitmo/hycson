@@ -13,10 +13,12 @@ public class Resource {
     private String type;
     private Map<String, Object> propertyMap = new HashMap<>(4);
     private List<Link> links = new ArrayList<>();
+    private List<Operation> operations;
 
-    public Resource(String id, String type) {
+    public Resource(String id, String type, List<Operation> operations) {
         this.id = id;
         this.type = type;
+        this.operations = operations;
     }
 
     public String getId() {
@@ -35,4 +37,7 @@ public class Resource {
         return links;
     }
 
+    public List<Operation> getOperations() {
+        return operations;
+    }
 }

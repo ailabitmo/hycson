@@ -40,8 +40,13 @@ public class HypermediaMessageParser implements Parser {
     // simple cache for context json objects
     private static Map<String, JsonObject> contextCache = new HashMap<>(2);
 
-    public HypermediaMessageParser(String entryPoint) {
-        ApiClient.initApiService(entryPoint);
+    /**
+     * Construct new instance of {@link HypermediaMessageParser}
+     *
+     * @param entryPointUrl - url of API entry point
+     */
+    public HypermediaMessageParser(String entryPointUrl) {
+        ApiClient.initApiService(entryPointUrl);
     }
 
     /**

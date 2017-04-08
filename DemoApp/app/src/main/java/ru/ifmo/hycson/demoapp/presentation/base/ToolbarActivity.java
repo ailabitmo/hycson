@@ -12,7 +12,7 @@ public abstract class ToolbarActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutRes());
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarView);
         setSupportActionBar(toolbar);
     }
 }

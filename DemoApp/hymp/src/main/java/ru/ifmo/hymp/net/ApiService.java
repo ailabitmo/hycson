@@ -10,7 +10,9 @@ import rx.Observable;
 public interface ApiService {
 
     /**
-     * Fetch resource from api as {@link JsonObject}
+     * Fetch resource from API as {@link JsonObject}
+     *
+     * @param url - url that point to resource
      */
     @GET
     Observable<Result<JsonObject>> load(@Url String url);

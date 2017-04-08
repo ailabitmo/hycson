@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:text="@string/login"
-            android:textColor="@color/actionBarColor"
+            android:textColor="@color/toolbarColor"
             android:textSize="20sp"
             />
 

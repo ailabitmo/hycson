@@ -5,4 +5,5 @@
     <string name="auth_failed">Authentication failed.</string>
     <string name="login">LOG IN</string>
     <string name="logout">LOG OUT</string>
+    <string name="drawer_header_text">Selected social network</string>
 </resources>

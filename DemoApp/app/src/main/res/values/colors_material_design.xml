@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
 
     <color name="red_50">#fde0dc</color>
     <color name="red_100">#f9bdbb</color>
@@ -133,6 +131,7 @@
     <color name="teal_600">#00897b</color>
     <color name="teal_700">#00796b</color>
     <color name="teal_800">#00695c</color>
+    <color name="teal_850">#005041</color>
     <color name="teal_900">#004d40</color>
     <color name="teal_A100">#a7ffeb</color>
     <color name="teal_A200">#64ffda</color>
@@ -279,8 +278,4 @@
     <color name="blue_grey_800">#37474f</color>
     <color name="blue_grey_900">#263238</color>
 
-
-    <!-- Colors for the app -->
-    <color name="actionBarColor">@color/light_blue_800</color>
-    <color name="statusBarColor">@color/light_blue_900</color>
 </resources>

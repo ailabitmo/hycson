@@ -4,8 +4,9 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimaryDark">@color/statusBarColor</item>
-        <item name="colorPrimary">@color/actionBarColor</item>
+        <item name="colorPrimary">@color/toolbarColor</item>
         <item name="actionBarStyle">@style/ThemeOverlay.AppCompat.ActionBar</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 </resources>

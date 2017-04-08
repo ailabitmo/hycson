@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@color/drawerHeaderColor"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+    <ImageView
+        android:id="@+id/socialLogoView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/socialTitleView"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_header_vk_circle"
+        />
+
+    <TextView
+        android:id="@+id/socialTitleView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:text="@string/drawer_header_text"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        />
+
+</RelativeLayout>

@@ -62,6 +62,10 @@ dependencies {
     compile "com.squareup.retrofit2:adapter-rxjava:$retrofit2Version"
     compile "com.squareup.retrofit2:converter-gson:$retrofit2Version"
 
+    // A Model-View-Presenter library for modern Android apps
+    def mosbyVersion = '2.0.1'
+    compile "com.hannesdorfmann.mosby:mvp:$mosbyVersion"
+
     // An OkHttp interceptor which logs HTTP request and response data.
     def okHttp3Version = '3.6.0'
     compile "com.squareup.okhttp3:logging-interceptor:$okHttp3Version"

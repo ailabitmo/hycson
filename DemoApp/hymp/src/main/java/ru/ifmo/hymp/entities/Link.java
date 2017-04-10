@@ -17,6 +17,10 @@ public class Link {
         return value;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public List<Operation> getOperations() {
         return operations;
     }

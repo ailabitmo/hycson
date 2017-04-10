@@ -1,4 +1,4 @@
-package ru.ifmo.hycson.demoapp;
+package ru.ifmo.hycson.demoapp.dagger.app;
 
 import android.app.Application;
 import android.content.Context;
@@ -11,10 +11,10 @@ import ru.ifmo.hycson.demoapp.data.PreferencesManager;
 import ru.ifmo.hycson.demoapp.util.LogHelper;
 
 @Module
-class AppModule {
+public class AppModule {
     private final Application mApplication;
 
-    AppModule(Application application) {
+    public AppModule(Application application) {
         mApplication = application;
     }
 

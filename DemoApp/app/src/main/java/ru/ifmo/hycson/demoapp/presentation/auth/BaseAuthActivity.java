@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.webkit.WebView;
 
@@ -14,13 +15,12 @@ import javax.inject.Inject;
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
 import ru.ifmo.hycson.demoapp.data.PreferencesManager;
-import ru.ifmo.hycson.demoapp.presentation.base.BaseActivity;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public abstract class BaseAuthActivity extends BaseActivity {
+public abstract class BaseAuthActivity extends AppCompatActivity {
     public static final String EXTRA_ACCESS_TOKEN = "ru.ifmo.hycson.demoapp.presentation.auth.access_token";
 
     @Inject
@@ -32,6 +32,7 @@ public abstract class BaseAuthActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_auth);
         App.getApp(this).getAppComponent().inject(this);
 
         mAuthWebView = (WebView) findViewById(R.id.authWebView);
@@ -45,17 +46,6 @@ public abstract class BaseAuthActivity extends BaseActivity {
         if (mSubscription != null && !mSubscription.isUnsubscribed()) {
             mSubscription.unsubscribe();
         }
-    }
-
-    @Override
-    protected int getLayoutRes() {
-        return R.layout.activity_auth;
-    }
-
-    @Nullable
-    @Override
-    protected Fragment createDisplayedFragment() {
-        return null;
     }
 
     protected <T> Observable<T> asObservable(final Callable<T> function) {

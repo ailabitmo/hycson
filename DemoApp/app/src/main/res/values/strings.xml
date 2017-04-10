@@ -2,6 +2,7 @@
     <string name="app_name">DemoApp</string>
     <string name="vk_auth_greeting">Hello authenticated VK user!</string>
     <string name="twitter_auth_greeting">Hello authenticated Twitter user!</string>
+    <string name="non_greeting">Please, select social network</string>
     <string name="auth_failed">Authentication failed.</string>
     <string name="login">LOG IN</string>
     <string name="logout">LOG OUT</string>

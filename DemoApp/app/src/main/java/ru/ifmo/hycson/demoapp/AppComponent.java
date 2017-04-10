@@ -8,6 +8,7 @@ import ru.ifmo.hycson.demoapp.data.OAuthModule;
 import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
+import ru.ifmo.hycson.demoapp.presentation.home.HomeActivity;
 import ru.ifmo.hycson.demoapp.presentation.home.HomeFragment;
 
 
@@ -20,6 +21,8 @@ import ru.ifmo.hycson.demoapp.presentation.home.HomeFragment;
         }
 )
 public interface AppComponent {
+    void inject(HomeActivity homeActivity);
+
     void inject(HomeFragment mainFragment);
 
     void inject(VKAuthActivity vkAuthActivity);

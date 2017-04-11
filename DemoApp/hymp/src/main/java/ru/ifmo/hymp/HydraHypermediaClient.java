@@ -19,7 +19,7 @@ import ru.ifmo.hymp.net.ApiClient;
 import ru.ifmo.hymp.utils.JsonUtils;
 import ru.ifmo.hymp.utils.StringUtils;
 import ru.ifmo.hymp.utils.rx.NetworkResultTransformer;
-import rx.Observable;
+import rx.Single;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -33,7 +33,7 @@ import rx.functions.Func2;
  * and JSON-LD:
  * @see <a href="https://www.w3.org/TR/json-ld/</a>
  */
-public class HypermediaMessageParser implements Parser {
+public class HydraHypermediaClient implements HypermediaClient {
     private static final String HEADER_LINK = "Link";
     private static final String HEADER_LINK_API_DOC = "rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"";
 
@@ -41,11 +41,11 @@ public class HypermediaMessageParser implements Parser {
     private static Map<String, JsonObject> contextCache = new HashMap<>(2);
 
     /**
-     * Construct new instance of {@link HypermediaMessageParser}
+     * Construct new instance of {@link HydraHypermediaClient}
      *
      * @param entryPointUrl - url of API entry point
      */
-    public HypermediaMessageParser(String entryPointUrl) {
+    public HydraHypermediaClient(String entryPointUrl) {
         ApiClient.initApiService(entryPointUrl);
     }
 
@@ -62,15 +62,15 @@ public class HypermediaMessageParser implements Parser {
      * @return internal resource representation
      */
     @Override
-    public Observable<Resource> loadAndParseResource(String url) {
+    public Single<Resource> loadHypermediaResource(String url) {
         return loadResource(url)
-                .flatMap(new Func1<Result<JsonObject>, Observable<Bundle>>() {
+                .flatMap(new Func1<Result<JsonObject>, Single<Bundle>>() {
                     @Override
-                    public Observable<Bundle> call(Result<JsonObject> resResult) {
+                    public Single<Bundle> call(Result<JsonObject> resResult) {
                         Headers headers = resResult.response().headers();
                         final JsonObject res = resResult.response().body();
 
-                        return Observable.zip(loadContextForResource(res), loadApiDoc(headers),
+                        return Single.zip(loadContextForResource(res), loadApiDoc(headers),
                                 new Func2<JsonObject, Result<JsonObject>, Bundle>() {
                                     @Override
                                     public Bundle call(JsonObject context, Result<JsonObject> apiDocRes) {
@@ -92,9 +92,9 @@ public class HypermediaMessageParser implements Parser {
      * Load resource from API by url
      *
      * @param url that point to resource
-     * @return {@link Observable} with resource that represents as {@link JsonObject}
+     * @return {@link Single} with resource that represents as {@link JsonObject}
      */
-    private Observable<Result<JsonObject>> loadResource(String url) {
+    private Single<Result<JsonObject>> loadResource(String url) {
         return ApiClient.getApiService().load(url)
                 .compose(new NetworkResultTransformer());
     }
@@ -103,9 +103,9 @@ public class HypermediaMessageParser implements Parser {
      * Retrieve Link Header from response headers and load API documentation
      *
      * @param headers of last response
-     * @return {@link Observable} with  Api doc that represents as {@link JsonObject}
+     * @return {@link Single} with  Api doc that represents as {@link JsonObject}
      */
-    private Observable<Result<JsonObject>> loadApiDoc(Headers headers) {
+    private Single<Result<JsonObject>> loadApiDoc(Headers headers) {
         String linkHeader = headers.get(HEADER_LINK);
 
         if (StringUtils.isEmpty(linkHeader)) {
@@ -126,16 +126,16 @@ public class HypermediaMessageParser implements Parser {
      * and cache it to {@link #contextCache}
      *
      * @param res for which @context loads
-     * @return {@link Observable} with @context that represents as {@link JsonObject}
+     * @return {@link Single} with @context that represents as {@link JsonObject}
      */
-    private Observable<JsonObject> loadContextForResource(JsonObject res) {
+    private Single<JsonObject> loadContextForResource(JsonObject res) {
         final String contextUrl = res.get("@context").getAsString();
         if (StringUtils.isEmpty(contextUrl)) {
             throw new RuntimeException("@context link is empty");
         }
 
         if (contextCache.containsKey(contextUrl)) {
-            return Observable.just(contextCache.get(contextUrl));
+            return Single.just(contextCache.get(contextUrl));
         }
 
         return ApiClient.getApiService().load(contextUrl)
@@ -146,7 +146,7 @@ public class HypermediaMessageParser implements Parser {
                         return result.response().body();
                     }
                 })
-                .doOnNext(new Action1<JsonObject>() {
+                .doOnSuccess(new Action1<JsonObject>() {
                     @Override
                     public void call(JsonObject context) {
                         contextCache.put(contextUrl, context);
@@ -167,7 +167,7 @@ public class HypermediaMessageParser implements Parser {
         if (context == null) {
             context = loadContextForResource(res)
                     .toBlocking()
-                    .single();
+                    .value();
         }
 
         String resId = res.get("@id").getAsString();

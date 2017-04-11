@@ -6,12 +6,12 @@ import android.content.Context;
 import ru.ifmo.hycson.demoapp.dagger.app.AppComponent;
 import ru.ifmo.hycson.demoapp.dagger.app.AppModule;
 import ru.ifmo.hycson.demoapp.dagger.app.DaggerAppComponent;
-import ru.ifmo.hycson.demoapp.dagger.hymp.HympComponent;
+import ru.ifmo.hycson.demoapp.dagger.hymp.HypermediaComponent;
 
 
 public class App extends Application {
     private AppComponent mAppComponent;
-    private HympComponent mHympComponent;
+    private HypermediaComponent mHypermediaComponent;
 
     @Override
     public void onCreate() {
@@ -29,17 +29,20 @@ public class App extends Application {
         return mAppComponent;
     }
 
-    public HympComponent plusHympComponent() {
-        // always get only one instance
-        if (mHympComponent == null) {
-            // start lifecycle of HympComponent
-            mHympComponent = mAppComponent.plusHympComponent();
+    /**
+     * Get or create {@link HypermediaComponent}
+     */
+    public HypermediaComponent plusHympComponent() {
+        if (mHypermediaComponent == null) {
+            mHypermediaComponent = mAppComponent.plusHympComponent();
         }
-        return mHympComponent;
+        return mHypermediaComponent;
     }
 
+    /**
+     * Stop lifecycle of {@link HypermediaComponent} and destroy all graph with dependencies
+     */
     public void clearHympComponent() {
-        // end lifecycle of HympComponent
-        mHympComponent = null;
+        mHypermediaComponent = null;
     }
 }

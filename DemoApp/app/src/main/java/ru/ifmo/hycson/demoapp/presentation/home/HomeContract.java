@@ -13,11 +13,11 @@ public interface HomeContract {
 
         void showError(Throwable e);
 
-        void setData(Resource entryPointResource);
+        void entryPointLoaded(Resource entryPointResource);
     }
 
     interface Presenter extends MvpPresenter<View> {
-        void loadEntryPoint(String url);
+        void loadEntryPoint();
     }
 }
 

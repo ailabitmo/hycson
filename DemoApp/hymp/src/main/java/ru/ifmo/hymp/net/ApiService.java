@@ -6,6 +6,7 @@ import retrofit2.adapter.rxjava.Result;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
 import rx.Observable;
+import rx.Single;
 
 public interface ApiService {
 
@@ -15,5 +16,5 @@ public interface ApiService {
      * @param url - url that point to resource
      */
     @GET
-    Observable<Result<JsonObject>> load(@Url String url);
+    Single<Result<JsonObject>> load(@Url String url);
 }

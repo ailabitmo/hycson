@@ -3,7 +3,9 @@ package ru.ifmo.hycson.demoapp.presentation.home;
 import com.hannesdorfmann.mosby.mvp.MvpPresenter;
 import com.hannesdorfmann.mosby.mvp.MvpView;
 
-import ru.ifmo.hymp.entities.Resource;
+import java.util.List;
+
+import ru.ifmo.hycson.demoapp.navigation.links.AppLink;
 
 public interface HomeContract {
     interface View extends MvpView {
@@ -13,7 +15,7 @@ public interface HomeContract {
 
         void showError(Throwable e);
 
-        void entryPointLoaded(Resource entryPointResource);
+        void setEntryPointLinks(List<AppLink> appLinks);
     }
 
     interface Presenter extends MvpPresenter<View> {

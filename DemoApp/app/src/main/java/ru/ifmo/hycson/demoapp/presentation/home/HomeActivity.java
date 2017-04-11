@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -23,17 +25,18 @@ import android.widget.Toast;
 
 import com.hannesdorfmann.mosby.mvp.MvpActivity;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
 import ru.ifmo.hycson.demoapp.data.PreferencesManager;
+import ru.ifmo.hycson.demoapp.navigation.links.AppLink;
 import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.SelectedSocialNetwork;
 import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
-import ru.ifmo.hymp.entities.Link;
-import ru.ifmo.hymp.entities.Resource;
 
 public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Presenter>
         implements HomeContract.View, View.OnClickListener {
@@ -140,13 +143,15 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
     }
 
     @Override
-    public void entryPointLoaded(Resource entryPointResource) {
+    public void setEntryPointLinks(List<AppLink> appLinks) {
         mNavigationMenu.clear();
-        for (final Link link : entryPointResource.getLinks()) {
-            mNavigationMenu.add(link.getTitle()).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+
+        for (final AppLink appLink : appLinks) {
+            mNavigationMenu.add(appLink.getTitle()).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    Toast.makeText(HomeActivity.this, link.getValue(), Toast.LENGTH_SHORT).show();
+                    Fragment displayFragment = appLink.createDisplayFragment();
+                    addFragment(displayFragment);
                     return false;
                 }
             });
@@ -172,6 +177,15 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         }
     }
 
+    private void addFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        fragmentManager.beginTransaction()
+                .add(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
     private void onSocialNetworkIconClick(SelectedSocialNetwork selectedNetwork, Intent authIntent) {
         if (!TextUtils.isEmpty(mPreferencesManager.retrieveAccessToken(selectedNetwork.getKey()))) {
             setSelectedSocialNetwork(selectedNetwork);
@@ -184,6 +198,9 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         if (mSelectedSocialNetwork == selectedNetwork) {
             return;
         }
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
         mSelectedSocialNetwork = selectedNetwork;
         mPreferencesManager.saveSelectedSocialNetwork(selectedNetwork);

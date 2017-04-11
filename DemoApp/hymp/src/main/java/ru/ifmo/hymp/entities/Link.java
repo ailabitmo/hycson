@@ -3,18 +3,18 @@ package ru.ifmo.hymp.entities;
 import java.util.List;
 
 public class Link {
-    private String value;
+    private String url;
     private String title;
     private List<Operation> operations;
 
-    public Link(String value, String title, List<Operation> operations) {
-        this.value = value;
+    public Link(String url, String title, List<Operation> operations) {
+        this.url = url;
         this.title = title;
         this.operations = operations;
     }
 
-    public String getValue() {
-        return value;
+    public String getUrl() {
+        return url;
     }
 
     public String getTitle() {

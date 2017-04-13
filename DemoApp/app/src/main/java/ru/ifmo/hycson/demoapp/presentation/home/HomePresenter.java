@@ -1,13 +1,12 @@
 package ru.ifmo.hycson.demoapp.presentation.home;
 
-import android.support.annotation.Nullable;
-
 import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 
 import java.util.List;
 
-import ru.ifmo.hycson.demoapp.navigation.links.AppLink;
-import ru.ifmo.hycson.demoapp.navigation.NavigationRules;
+import ru.ifmo.hycson.demoapp.presentation.navigation.NavigationRules;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.AppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
 import ru.ifmo.hymp.HypermediaClient;
 import ru.ifmo.hymp.entities.Link;
 import ru.ifmo.hymp.entities.Operation;
@@ -16,6 +15,7 @@ import rx.Observable;
 import rx.SingleSubscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -43,26 +43,48 @@ public class HomePresenter extends MvpBasePresenter<HomeContract.View> implement
                                 return Observable.from(entryPoint.getLinks());
                             }
                         })
-                        .map(new Func1<Link, AppLink>() {
+                        .flatMap(new Func1<Link, Observable<Operation>>() {
                             @Override
-                            public AppLink call(Link link) {
-                                return mapToAppLink(link);
+                            public Observable<Operation> call(Link link) {
+                                return Observable.from(link.getOperations())
+                                        .filter(new Func1<Operation, Boolean>() {
+                                            @Override
+                                            public Boolean call(Operation operation) {
+                                                return operation.getType() == Operation.Type.GET;
+                                            }
+                                        });
+                            }
+                        }, new Func2<Link, Operation, AppLink>() {
+                            @Override
+                            public AppLink call(Link link, Operation operation) {
+                                return NavigationRules.mapToAppLink(operation, link.getTitle(), link.getUrl());
                             }
                         })
                         .filter(new Func1<AppLink, Boolean>() {
                             @Override
                             public Boolean call(AppLink appLink) {
-                                return appLink != null;
+                                return appLink instanceof DisplayableAppLink;
                             }
                         })
-                        .toList()
+                        .map(new Func1<AppLink, DisplayableAppLink>() {
+                            @Override
+                            public DisplayableAppLink call(AppLink appLink) {
+                                return (DisplayableAppLink) appLink;
+                            }
+                        })
+                        .toSortedList(new Func2<DisplayableAppLink, DisplayableAppLink, Integer>() {
+                            @Override
+                            public Integer call(DisplayableAppLink appLink, DisplayableAppLink appLink2) {
+                                return appLink.getTitle().compareTo(appLink2.getTitle()) * -1;
+                            }
+                        })
                         .toSingle()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new SingleSubscriber<List<AppLink>>() {
+                        .subscribe(new SingleSubscriber<List<DisplayableAppLink>>() {
                             @Override
-                            public void onSuccess(List<AppLink> appLinks) {
+                            public void onSuccess(List<DisplayableAppLink> appLinks) {
                                 if (isViewAttached()) {
-                                    getView().setEntryPointLinks(appLinks);
+                                    getView().setHomeEntryPointLinks(appLinks);
                                 }
                             }
 
@@ -74,21 +96,6 @@ public class HomePresenter extends MvpBasePresenter<HomeContract.View> implement
                             }
                         })
         );
-    }
-
-    @Nullable
-    private AppLink mapToAppLink(Link link) {
-        for (Operation operation : link.getOperations()) {
-            if (operation.getType() == Operation.Type.GET) {
-                AppLink appLink = NavigationRules.getAppLink(operation);
-                if (appLink != null) {
-                    appLink.setTitle(link.getTitle());
-                    appLink.setUrl(link.getUrl());
-                }
-                return appLink;
-            }
-        }
-        return null;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package ru.ifmo.hycson.demoapp.dagger.home;
 
+import javax.inject.Named;
+
 import dagger.Module;
 import dagger.Provides;
 import ru.ifmo.hycson.demoapp.presentation.home.HomeContract;

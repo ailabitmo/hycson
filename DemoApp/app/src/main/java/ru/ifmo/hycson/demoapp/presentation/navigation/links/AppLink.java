@@ -1,12 +1,8 @@
-package ru.ifmo.hycson.demoapp.navigation.links;
+package ru.ifmo.hycson.demoapp.presentation.navigation.links;
 
-import android.support.v4.app.Fragment;
-
-public abstract class AppLink {
+public class AppLink {
     private String mUrl;
     private String mTitle;
-
-    public abstract Fragment createDisplayFragment();
 
     public String getUrl() {
         return mUrl;

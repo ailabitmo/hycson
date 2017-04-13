@@ -24,6 +24,7 @@ android {
         buildConfigField "String", "TWITTER_API_SECRET", project.getProperty('twitter_api_secret')
         buildConfigField "String", "TWITTER_API_CALLBACK_URI", project.getProperty('twitter_api_callback_url')
         buildConfigField "String", "TWITTER_ENTRY_POINT", project.getProperty('twitter_api_entrypoint')
+        buildConfigField "String", "DEFAULT_ENTRY_POINT", project.getProperty('default_entrypoint')
     }
     buildTypes {
         release {

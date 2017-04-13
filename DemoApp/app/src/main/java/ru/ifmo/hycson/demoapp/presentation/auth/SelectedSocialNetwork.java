@@ -6,7 +6,7 @@ import ru.ifmo.hycson.demoapp.data.PreferencesManager;
 public enum SelectedSocialNetwork {
     VK(PreferencesManager.PREF_VK_ACCESS_TOKEN_KEY, BuildConfig.VK_ENTRY_POINT),
     TWITTER(PreferencesManager.PREF_TWITTER_ACCESS_TOKEN_KEY, BuildConfig.TWITTER_ENTRY_POINT),
-    NON("", "");
+    NON("", BuildConfig.DEFAULT_ENTRY_POINT);
 
     private String mKey;
     private String mEntryPointUrl;

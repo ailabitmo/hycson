@@ -45,8 +45,8 @@ public class HydraHypermediaClient implements HypermediaClient {
      *
      * @param entryPointUrl - url of API entry point
      */
-    public HydraHypermediaClient(String entryPointUrl) {
-        ApiClient.initApiService(entryPointUrl);
+    public HydraHypermediaClient(String entryPointUrl, String accessToken) {
+        ApiClient.initApiService(entryPointUrl, accessToken);
     }
 
     /**

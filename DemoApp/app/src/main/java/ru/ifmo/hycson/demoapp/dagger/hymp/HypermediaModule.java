@@ -11,19 +11,29 @@ import ru.ifmo.hymp.HypermediaClient;
 
 @Module
 public class HypermediaModule {
-
     @Provides
     @SocialNetworkScope
-    String provideEntryPointUrl(PreferencesManager preferencesManager) {
+    Bundle provideEntryPointUrl(PreferencesManager preferencesManager) {
         SelectedSocialNetwork socialNetwork = preferencesManager.retrieveSelectedSocialNetwork();
+        String token = preferencesManager.retrieveAccessToken(socialNetwork.getKey());
         LogHelper.d(LogHelper.TAG_MODULE, this.getClass().getSimpleName() + ".provideEntryPointUrl" + ", Selected network: " + socialNetwork);
-        return socialNetwork.getEntryPointUrl();
+        return new Bundle(socialNetwork.getEntryPointUrl(), token);
     }
 
     @Provides
     @SocialNetworkScope
-    HypermediaClient provideHydraHypermediaClient(String entryPointUrl) {
+    HypermediaClient provideHydraHypermediaClient(Bundle bundle) {
         LogHelper.d(LogHelper.TAG_MODULE, this.getClass().getSimpleName() + ".provideHydraHypermediaClient");
-        return new HydraHypermediaClient(entryPointUrl);
+        return new HydraHypermediaClient(bundle.url, bundle.token);
+    }
+
+    static class Bundle {
+        private String url;
+        private String token;
+
+        Bundle(String url, String token) {
+            this.url = url;
+            this.token = token;
+        }
     }
 }

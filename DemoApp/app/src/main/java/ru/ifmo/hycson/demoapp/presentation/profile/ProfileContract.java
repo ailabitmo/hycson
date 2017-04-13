@@ -1,13 +1,11 @@
-package ru.ifmo.hycson.demoapp.presentation.home;
+package ru.ifmo.hycson.demoapp.presentation.profile;
 
 import com.hannesdorfmann.mosby.mvp.MvpPresenter;
 import com.hannesdorfmann.mosby.mvp.MvpView;
 
-import java.util.List;
+import ru.ifmo.hycson.demoapp.presentation.profile.entities.ProfileData;
 
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
-
-public interface HomeContract {
+public interface ProfileContract {
     interface View extends MvpView {
         void showLoading();
 
@@ -15,11 +13,10 @@ public interface HomeContract {
 
         void showError(Throwable e);
 
-        void setHomeEntryPointLinks(List<DisplayableAppLink> appLinks);
+        void setProfileData(ProfileData profileData);
     }
 
     interface Presenter extends MvpPresenter<View> {
-        void loadEntryPoint();
+        void loadProfileData(String profileUrl);
     }
 }
-

@@ -1,4 +1,4 @@
-package ru.ifmo.hycson.demoapp.presentation.base;
+package ru.ifmo.hycson.demoapp.presentation;
 
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;

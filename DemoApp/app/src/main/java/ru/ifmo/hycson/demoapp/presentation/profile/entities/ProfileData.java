@@ -17,6 +17,30 @@ public class ProfileData {
     private List<AppLink> mAppLinks;
     private List<DisplayableAppLink> mDisplayableAppLinks;
 
+    public String getId() {
+        return mId;
+    }
+
+    public String getGivenName() {
+        return mGivenName;
+    }
+
+    public String getFamilyName() {
+        return mFamilyName;
+    }
+
+    public String getImage() {
+        return mImage;
+    }
+
+    public List<AppLink> getAppLinks() {
+        return mAppLinks;
+    }
+
+    public List<DisplayableAppLink> getDisplayableAppLinks() {
+        return mDisplayableAppLinks;
+    }
+
     public ProfileData(ProfileData.Builder profileBuilder) {
         mId = profileBuilder.mId;
         mGivenName = profileBuilder.mGivenName;

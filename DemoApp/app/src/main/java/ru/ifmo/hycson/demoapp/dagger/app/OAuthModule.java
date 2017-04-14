@@ -1,4 +1,4 @@
-package ru.ifmo.hycson.demoapp.data;
+package ru.ifmo.hycson.demoapp.dagger.app;
 
 import com.github.scribejava.apis.TwitterApi;
 import com.github.scribejava.apis.VkontakteApi;

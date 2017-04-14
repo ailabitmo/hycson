@@ -7,8 +7,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.hannesdorfmann.mosby.mvp.MvpFragment;
+import com.squareup.picasso.Picasso;
+
+import java.util.Locale;
 
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
@@ -18,6 +23,10 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
         implements ProfileContract.View {
 
     private static final String BUNDLE_PROFILE_URL = "ru.ifmo.hycson.demoapp.presentation.profile.profile_url";
+
+    private ImageView mProfileImageView;
+    private TextView mPersonNameView;
+    private View mFriendsButtonView;
 
     public static Fragment newInstance(String profileUrl) {
         Fragment instance = new ProfileFragment();
@@ -37,6 +46,14 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mProfileImageView = (ImageView) view.findViewById(R.id.profileImageView);
+        mPersonNameView = (TextView) view.findViewById(R.id.personNameView);
+        mFriendsButtonView = view.findViewById(R.id.friendsButtonView);
     }
 
     @NonNull
@@ -62,6 +79,15 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
 
     @Override
     public void setProfileData(ProfileData profileData) {
-        int a = 4;
+        updateProfile(profileData);
+    }
+
+    private void updateProfile(ProfileData profileData) {
+        Picasso.with(getContext())
+                .load(profileData.getImage())
+                .into(mProfileImageView);
+
+        mPersonNameView.setText(String.format(Locale.getDefault(), "%s %s",
+                profileData.getGivenName(), profileData.getFamilyName()));
     }
 }

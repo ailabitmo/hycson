@@ -43,7 +43,8 @@ dependencies {
     compile "com.android.support:appcompat-v7:$supportLibVersion"
     compile "com.android.support:design:$supportLibVersion"
 
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta3'
+    def picassoVersion = '2.5.2'
+    compile "com.squareup.picasso:picasso:$picassoVersion"
 
     // Simple OAuth library for Java
     def scribeJavaVersion = '2.8.1'

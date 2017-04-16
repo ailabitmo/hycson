@@ -7,4 +7,6 @@
     <string name="login">LOG IN</string>
     <string name="logout">LOG OUT</string>
     <string name="drawer_header_text">Selected social network</string>
+    <string name="profile_friends">Friends</string>
+    <string name="profile_new_message">Write a message</string>
 </resources>

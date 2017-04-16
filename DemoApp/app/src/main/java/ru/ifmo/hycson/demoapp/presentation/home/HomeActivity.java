@@ -159,7 +159,9 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             Fragment displayFragment = appLink.createDisplayFragment(appLink.getUrl());
-                            addFragment(displayFragment);
+                            setTitle(appLink.getTitle());
+                            replaceFragment(displayFragment);
+                            mDrawer.closeDrawers();
                             return true;
                         }
                     });
@@ -198,12 +200,10 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         }
     }
 
-    private void addFragment(Fragment fragment) {
+    private void replaceFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-
         fragmentManager.beginTransaction()
-                .add(R.id.fragmentContainer, fragment)
-                .addToBackStack(null)
+                .replace(R.id.fragmentContainer, fragment)
                 .commit();
     }
 

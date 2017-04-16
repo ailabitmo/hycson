@@ -1,32 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/profileImageView"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:contentDescription="@null"
-        android:scaleType="centerCrop"/>
-
-    <TextView
-        android:id="@+id/personNameView"
-        android:layout_width="match_parent"
+    <ProgressBar
+        android:id="@+id/progressView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:textSize="24sp"
-        tools:text="Александр Суринов"/>
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/toolbarColor"/>
 
-    <Button
-        android:id="@+id/friendsButtonView"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:backgroundTint="@color/toolbarColor"
-        android:text="Friends"
-        android:textColor="@color/grey_white_1000"/>
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true">
 
-</LinearLayout>
+        <RelativeLayout
+            android:id="@+id/rootView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/profileImageView"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"/>
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/profileImageView"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:orientation="vertical"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/personNameView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="16dp"
+                        android:textSize="24sp"
+                        tools:text="Александр Суринов"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/grey_300"/>
+
+                    <Button
+                        android:id="@+id/friendsButtonView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:drawablePadding="8dp"
+                        android:drawableStart="@drawable/ic_drawer_friends_24dp"
+                        android:gravity="start|center_vertical"
+                        android:paddingEnd="16dp"
+                        android:paddingStart="16dp"
+                        android:text="Show friends"
+                        android:textAllCaps="false"
+                        android:textColor="@color/grey_600"
+                        android:visibility="gone"
+                        tools:visibility="visible"/>
+
+                    <Button
+                        android:id="@+id/newMessageButtonView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:drawablePadding="8dp"
+                        android:drawableStart="@drawable/ic_drawer_messages_24dp"
+                        android:gravity="start|center_vertical"
+                        android:paddingEnd="16dp"
+                        android:paddingStart="16dp"
+                        android:text="@string/profile_new_message"
+                        android:textAllCaps="false"
+                        android:textColor="@color/grey_600"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</FrameLayout>

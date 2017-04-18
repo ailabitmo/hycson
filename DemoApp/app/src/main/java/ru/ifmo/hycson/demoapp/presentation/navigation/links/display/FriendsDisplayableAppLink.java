@@ -7,6 +7,6 @@ import ru.ifmo.hycson.demoapp.presentation.friends.FriendsFragment;
 public class FriendsDisplayableAppLink extends DisplayableAppLink {
     @Override
     public Fragment createDisplayFragment(String url) {
-        return new FriendsFragment();
+        return FriendsFragment.newInstance(url);
     }
 }

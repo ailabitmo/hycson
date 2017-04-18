@@ -81,10 +81,8 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
 
         mHeaderVkLogoView = headerView.findViewById(R.id.vkLogoView);
         mHeaderVkLogoView.setOnClickListener(this);
-
         mHeaderTwitterLogoView = headerView.findViewById(R.id.twitterLogoView);
         mHeaderTwitterLogoView.setOnClickListener(this);
-
         mHeaderGreetingTextView = (TextView) headerView.findViewById(R.id.greetingView);
 
         mSelectedSocialNetwork = mPreferencesManager.retrieveSelectedSocialNetwork();
@@ -150,16 +148,17 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
     public void setHomeEntryPointLinks(List<DisplayableAppLink> appLinks) {
         mNavigationMenu.clear();
 
-        for (final DisplayableAppLink appLink : appLinks) {
-            @DrawableRes int iconRes = getIconByAppLinkType(appLink);
+        for (final DisplayableAppLink displayableAppLink : appLinks) {
+            @DrawableRes int iconRes = getIconByAppLinkType(displayableAppLink);
 
-            mNavigationMenu.add(appLink.getTitle())
+            mNavigationMenu.add(displayableAppLink.getTitle())
                     .setIcon(iconRes)
                     .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            Fragment displayFragment = appLink.createDisplayFragment(appLink.getUrl());
-                            setTitle(appLink.getTitle());
+                            Fragment displayFragment = displayableAppLink.createDisplayFragment(displayableAppLink.getUrl());
+                            setTitle(displayableAppLink.getTitle());
+                            clearFragmentBackStack();
                             replaceFragment(displayFragment);
                             mDrawer.closeDrawers();
                             return true;
@@ -220,8 +219,7 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
             return;
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        clearFragmentBackStack();
 
         mSelectedSocialNetwork = selectedNetwork;
         mPreferencesManager.saveSelectedSocialNetwork(selectedNetwork);
@@ -234,6 +232,18 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         setPresenter(newPresenter);
 
         getPresenter().loadEntryPoint();
+    }
+
+    private void clearFragmentBackStack() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragmentContainer);
+        if (currentFragment != null) {
+            fragmentManager.beginTransaction()
+                    .remove(currentFragment)
+                    .commit();
+        }
     }
 
     private void setHeader(SelectedSocialNetwork selectedNetwork) {

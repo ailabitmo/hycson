@@ -2,6 +2,7 @@ package ru.ifmo.hycson.demoapp.dagger.hymp;
 
 import dagger.Subcomponent;
 import ru.ifmo.hycson.demoapp.dagger.SocialNetworkScope;
+import ru.ifmo.hycson.demoapp.dagger.friends.FriendsComponent;
 import ru.ifmo.hycson.demoapp.dagger.home.HomeComponent;
 import ru.ifmo.hycson.demoapp.dagger.profile.ProfileComponent;
 
@@ -11,4 +12,6 @@ public interface HypermediaComponent {
     HomeComponent plusHomeComponent();
 
     ProfileComponent plusProfileComponent();
+
+    FriendsComponent plusFriendsComponent();
 }

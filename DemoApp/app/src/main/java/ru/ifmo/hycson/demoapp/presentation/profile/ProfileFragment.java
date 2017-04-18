@@ -4,12 +4,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.hannesdorfmann.mosby.mvp.MvpFragment;
 import com.squareup.picasso.Picasso;
@@ -19,6 +21,7 @@ import java.util.Locale;
 
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
+import ru.ifmo.hycson.demoapp.presentation.friends.FriendsFragment;
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.FriendsDisplayableAppLink;
 import ru.ifmo.hycson.demoapp.presentation.profile.entities.ProfileData;
@@ -74,17 +77,17 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
 
     @Override
     public void showLoading() {
-
+        mProgressView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideLoading() {
-
+        mProgressView.setVisibility(View.GONE);
     }
 
     @Override
     public void showError(Throwable e) {
-
+        Toast.makeText(getContext(), e.toString(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -92,7 +95,7 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
         updateProfile(profileData);
     }
 
-    private void updateProfile(ProfileData profileData) {
+    private void updateProfile(final ProfileData profileData) {
         Picasso.with(getContext())
                 .load(profileData.getImage())
                 .into(mProfileImageView);
@@ -102,14 +105,24 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
 
         showSupportedDisplayableLinks(profileData.getDisplayableAppLinks());
         mRootView.setVisibility(View.VISIBLE);
-        mProgressView.setVisibility(View.GONE);
     }
 
     private void showSupportedDisplayableLinks(List<DisplayableAppLink> appLinks) {
-        for (DisplayableAppLink appLink : appLinks) {
+        for (final DisplayableAppLink appLink : appLinks) {
             if (appLink instanceof FriendsDisplayableAppLink) {
                 mFriendsButtonView.setText(appLink.getTitle());
                 mFriendsButtonView.setVisibility(View.VISIBLE);
+                mFriendsButtonView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Fragment friendsFragment = FriendsFragment.newInstance(appLink.getUrl());
+                        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                        fragmentManager.beginTransaction()
+                                .replace(R.id.fragmentContainer, friendsFragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                });
             }
         }
     }

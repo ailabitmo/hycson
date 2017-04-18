@@ -20,6 +20,7 @@ import ru.ifmo.hymp.utils.JsonUtils;
 import ru.ifmo.hymp.utils.StringUtils;
 import ru.ifmo.hymp.utils.rx.NetworkResultTransformer;
 import rx.Single;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
@@ -143,6 +144,11 @@ public class HydraHypermediaClient implements HypermediaClient {
                     @Override
                     public JsonObject call(Result<JsonObject> result) {
                         return result.response().body();
+                    }
+                }).doOnSuccess(new Action1<JsonObject>() {
+                    @Override
+                    public void call(JsonObject jsonObject) {
+                        contextCache.put(contextUrl, jsonObject);
                     }
                 });
     }

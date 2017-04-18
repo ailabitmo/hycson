@@ -2,11 +2,11 @@ package ru.ifmo.hycson.demoapp.presentation.navigation.links.display;
 
 import android.support.v4.app.Fragment;
 
-import ru.ifmo.hycson.demoapp.presentation.messages.MessagesFragment;
+import ru.ifmo.hycson.demoapp.presentation.profile.ProfileFragment;
 
-public class MessagesDisplayableAppLink extends DisplayableAppLink {
+public class ProfileDisplayAppLink extends DisplayAppLink {
     @Override
     public Fragment createDisplayFragment(String url) {
-        return new MessagesFragment();
+        return ProfileFragment.newInstance(url);
     }
 }

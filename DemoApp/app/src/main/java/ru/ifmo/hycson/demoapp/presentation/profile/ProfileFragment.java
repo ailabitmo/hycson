@@ -22,8 +22,9 @@ import java.util.Locale;
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
 import ru.ifmo.hycson.demoapp.presentation.friends.FriendsFragment;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.FriendsDisplayableAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.AppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.create.MessageCreateLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.FriendsDisplayAppLink;
 import ru.ifmo.hycson.demoapp.presentation.profile.entities.ProfileData;
 
 public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileContract.Presenter>
@@ -35,7 +36,7 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
     private ImageView mProfileImageView;
     private TextView mPersonNameView;
     private Button mFriendsButtonView;
-    private View mNewMessageButtonView;
+    private Button mNewMessageButtonView;
     private View mProgressView;
 
     public static Fragment newInstance(String profileUrl) {
@@ -61,11 +62,13 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle(getString(R.string.fragment_profile_title));
+
         mRootView = view.findViewById(R.id.rootView);
         mProfileImageView = (ImageView) mRootView.findViewById(R.id.profileImageView);
         mPersonNameView = (TextView) view.findViewById(R.id.personNameView);
         mFriendsButtonView = (Button) view.findViewById(R.id.friendsButtonView);
-        mNewMessageButtonView = view.findViewById(R.id.newMessageButtonView);
+        mNewMessageButtonView = (Button) view.findViewById(R.id.newMessageButtonView);
         mProgressView = view.findViewById(R.id.progressView);
     }
 
@@ -103,13 +106,13 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
         mPersonNameView.setText(String.format(Locale.getDefault(), "%s %s",
                 profileData.getGivenName(), profileData.getFamilyName()));
 
-        showSupportedDisplayableLinks(profileData.getDisplayableAppLinks());
+        showSupportedAppLinks(profileData.getAppLinks());
         mRootView.setVisibility(View.VISIBLE);
     }
 
-    private void showSupportedDisplayableLinks(List<DisplayableAppLink> appLinks) {
-        for (final DisplayableAppLink appLink : appLinks) {
-            if (appLink instanceof FriendsDisplayableAppLink) {
+    private void showSupportedAppLinks(List<AppLink> appLinks) {
+        for (final AppLink appLink : appLinks) {
+            if (appLink instanceof FriendsDisplayAppLink) {
                 mFriendsButtonView.setText(appLink.getTitle());
                 mFriendsButtonView.setVisibility(View.VISIBLE);
                 mFriendsButtonView.setOnClickListener(new View.OnClickListener() {
@@ -121,6 +124,17 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
                                 .replace(R.id.fragmentContainer, friendsFragment)
                                 .addToBackStack(null)
                                 .commit();
+                    }
+                });
+            }
+
+            if (appLink instanceof MessageCreateLink) {
+                mNewMessageButtonView.setText(appLink.getTitle());
+                mNewMessageButtonView.setVisibility(View.VISIBLE);
+                mNewMessageButtonView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getContext(), "New message!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

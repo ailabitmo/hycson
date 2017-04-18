@@ -37,10 +37,10 @@ import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.SelectedSocialNetwork;
 import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.VKAuthActivity;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.FriendsDisplayableAppLink;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.MessagesDisplayableAppLink;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.ProfileDisplayableAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.FriendsDisplayAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.MessagesDisplayAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.ProfileDisplayAppLink;
 
 public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Presenter>
         implements HomeContract.View, View.OnClickListener {
@@ -145,19 +145,18 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
     }
 
     @Override
-    public void setHomeEntryPointLinks(List<DisplayableAppLink> appLinks) {
+    public void setHomeEntryPointLinks(List<DisplayAppLink> appLinks) {
         mNavigationMenu.clear();
 
-        for (final DisplayableAppLink displayableAppLink : appLinks) {
-            @DrawableRes int iconRes = getIconByAppLinkType(displayableAppLink);
+        for (final DisplayAppLink displayAppLink : appLinks) {
+            @DrawableRes int iconRes = getIconByAppLinkType(displayAppLink);
 
-            mNavigationMenu.add(displayableAppLink.getTitle())
+            mNavigationMenu.add(displayAppLink.getTitle())
                     .setIcon(iconRes)
                     .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            Fragment displayFragment = displayableAppLink.createDisplayFragment(displayableAppLink.getUrl());
-                            setTitle(displayableAppLink.getTitle());
+                            Fragment displayFragment = displayAppLink.createDisplayFragment(displayAppLink.getUrl());
                             clearFragmentBackStack();
                             replaceFragment(displayFragment);
                             mDrawer.closeDrawers();
@@ -187,12 +186,12 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
     }
 
     @DrawableRes
-    private int getIconByAppLinkType(DisplayableAppLink appLink) {
-        if (appLink instanceof ProfileDisplayableAppLink) {
+    private int getIconByAppLinkType(DisplayAppLink appLink) {
+        if (appLink instanceof ProfileDisplayAppLink) {
             return R.drawable.ic_drawer_profile_24dp;
-        } else if (appLink instanceof FriendsDisplayableAppLink) {
+        } else if (appLink instanceof FriendsDisplayAppLink) {
             return R.drawable.ic_drawer_friends_24dp;
-        } else if (appLink instanceof MessagesDisplayableAppLink) {
+        } else if (appLink instanceof MessagesDisplayAppLink) {
             return R.drawable.ic_drawer_messages_24dp;
         } else {
             return R.drawable.ic_drawer_default_24dp;

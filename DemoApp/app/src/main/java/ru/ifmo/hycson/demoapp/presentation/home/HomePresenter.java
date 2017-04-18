@@ -4,8 +4,9 @@ import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 
 import java.util.List;
 
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
-import ru.ifmo.hycson.demoapp.util.rx.DisplayableAppLinksTransformer;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.AppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayAppLink;
+import ru.ifmo.hycson.demoapp.util.rx.AppLinksTransformer;
 import ru.ifmo.hymp.HypermediaClient;
 import ru.ifmo.hymp.entities.Link;
 import ru.ifmo.hymp.entities.Resource;
@@ -40,12 +41,31 @@ public class HomePresenter extends MvpBasePresenter<HomeContract.View> implement
                                 return Observable.from(entryPoint.getLinks());
                             }
                         })
-                        .compose(new DisplayableAppLinksTransformer())
+                        .compose(new AppLinksTransformer())
+                        .flatMap(new Func1<List<AppLink>, Observable<AppLink>>() {
+                            @Override
+                            public Observable<AppLink> call(List<AppLink> appLinks) {
+                                return Observable.from(appLinks);
+                            }
+                        })
+                        .filter(new Func1<AppLink, Boolean>() {
+                            @Override
+                            public Boolean call(AppLink appLink) {
+                                return appLink instanceof DisplayAppLink;
+                            }
+                        })
+                        .map(new Func1<AppLink, DisplayAppLink>() {
+                            @Override
+                            public DisplayAppLink call(AppLink appLink) {
+                                return (DisplayAppLink) appLink;
+                            }
+                        })
+                        .toList()
                         .toSingle()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new SingleSubscriber<List<DisplayableAppLink>>() {
+                        .subscribe(new SingleSubscriber<List<DisplayAppLink>>() {
                             @Override
-                            public void onSuccess(List<DisplayableAppLink> appLinks) {
+                            public void onSuccess(List<DisplayAppLink> appLinks) {
                                 if (isViewAttached()) {
                                     getView().setHomeEntryPointLinks(appLinks);
                                 }

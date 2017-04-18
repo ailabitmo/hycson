@@ -9,4 +9,6 @@
     <string name="drawer_header_text">Selected social network</string>
     <string name="profile_friends">Friends</string>
     <string name="profile_new_message">Write a message</string>
+    <string name="fragment_profile_title">Profile</string>
+    <string name="fragment_friends_title">Friends</string>
 </resources>

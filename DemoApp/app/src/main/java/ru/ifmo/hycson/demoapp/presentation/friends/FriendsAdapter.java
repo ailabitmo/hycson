@@ -56,6 +56,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ProfileV
         Picasso.with(holder.itemView.getContext())
                 .load(profileData.getImage())
                 .transform(new CircleTransformation())
+                .placeholder(R.drawable.ic_account_circle_24dp)
+                .error(R.drawable.ic_account_circle_24dp)
                 .into(holder.profileImageView);
     }
 

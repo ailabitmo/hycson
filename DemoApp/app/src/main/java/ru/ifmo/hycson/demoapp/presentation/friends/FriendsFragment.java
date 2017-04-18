@@ -27,7 +27,6 @@ public class FriendsFragment extends MvpFragment<FriendsContract.View, FriendsCo
     private static final String BUNDLE_FRIENDS_URL = "ru.ifmo.hycson.demoapp.presentation.friends.url";
 
     private View mProgressView;
-    private RecyclerView mRecyclerView;
     private FriendsAdapter mAdapter;
 
     public static Fragment newInstance(String friendsUrl) {
@@ -47,10 +46,12 @@ public class FriendsFragment extends MvpFragment<FriendsContract.View, FriendsCo
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setAdapter(mAdapter = new FriendsAdapter(this));
+        getActivity().setTitle(getString(R.string.fragment_friends_title));
+
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(mAdapter = new FriendsAdapter(this));
 
         mProgressView = view.findViewById(R.id.progressView);
     }

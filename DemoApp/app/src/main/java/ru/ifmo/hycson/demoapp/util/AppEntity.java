@@ -3,12 +3,12 @@ package ru.ifmo.hycson.demoapp.util;
 import android.support.annotation.Nullable;
 
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.AppLink;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.ProfileDisplayableAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.ProfileDisplayAppLink;
 import ru.ifmo.hymp.entities.Link;
 
 public enum AppEntity {
     ENTRY_POINT(null),
-    PERSON(new ProfileDisplayableAppLink()),
+    PERSON(new ProfileDisplayAppLink()),
     MESSAGE(null),
     FRIENDS_COLLECTION(null),
     MESSAGES_COLLECTION(null);

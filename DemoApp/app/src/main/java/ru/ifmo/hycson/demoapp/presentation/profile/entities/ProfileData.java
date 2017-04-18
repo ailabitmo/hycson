@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.AppLink;
-import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayableAppLink;
+import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.DisplayAppLink;
 
 public class ProfileData {
     private String mId;
@@ -15,7 +15,7 @@ public class ProfileData {
     private String mImage;
 
     private List<AppLink> mAppLinks;
-    private List<DisplayableAppLink> mDisplayableAppLinks;
+    private List<DisplayAppLink> mDisplayAppLinks;
 
     public String getId() {
         return mId;
@@ -37,8 +37,8 @@ public class ProfileData {
         return mAppLinks;
     }
 
-    public List<DisplayableAppLink> getDisplayableAppLinks() {
-        return mDisplayableAppLinks;
+    public List<DisplayAppLink> getDisplayAppLinks() {
+        return mDisplayAppLinks;
     }
 
     public ProfileData(ProfileData.Builder profileBuilder) {
@@ -47,7 +47,7 @@ public class ProfileData {
         mFamilyName = profileBuilder.mFamilyName;
         mImage = profileBuilder.mImage;
         mAppLinks = profileBuilder.mAppLinks;
-        mDisplayableAppLinks = profileBuilder.mDisplayableAppLinks;
+        mDisplayAppLinks = profileBuilder.mDisplayAppLinks;
     }
 
     public static final class Builder {
@@ -57,7 +57,7 @@ public class ProfileData {
         private String mImage;
 
         private List<AppLink> mAppLinks;
-        private List<DisplayableAppLink> mDisplayableAppLinks;
+        private List<DisplayAppLink> mDisplayAppLinks;
 
         public Builder setId(String id) {
             mId = id;
@@ -84,8 +84,8 @@ public class ProfileData {
             return this;
         }
 
-        public Builder setDisplayableAppLinks(List<DisplayableAppLink> displayableAppLinks) {
-            mDisplayableAppLinks = displayableAppLinks;
+        public Builder setDisplayAppLinks(List<DisplayAppLink> displayAppLinks) {
+            mDisplayAppLinks = displayAppLinks;
             return this;
         }
 
@@ -106,8 +106,8 @@ public class ProfileData {
                 mAppLinks = new ArrayList<>();
             }
 
-            if (mDisplayableAppLinks == null) {
-                mDisplayableAppLinks = new ArrayList<>();
+            if (mDisplayAppLinks == null) {
+                mDisplayAppLinks = new ArrayList<>();
             }
 
             return new ProfileData(this);

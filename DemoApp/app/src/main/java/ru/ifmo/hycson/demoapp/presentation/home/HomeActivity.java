@@ -3,6 +3,7 @@ package ru.ifmo.hycson.demoapp.presentation.home;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
@@ -48,6 +49,7 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
     private DrawerLayout mDrawer;
     private Menu mNavigationMenu;
 
+    private View mProgressView;
     private ViewGroup mHeaderRootView;
     private View mHeaderVkLogoView;
     private View mHeaderTwitterLogoView;
@@ -71,6 +73,8 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_toolbar_stat_hamburger_24dp);
+
+        mProgressView = findViewById(R.id.progressView);
 
         mDrawer = (DrawerLayout) findViewById(R.id.drawerView);
         NavigationView navigationView = (NavigationView) mDrawer.findViewById(R.id.navigationView);
@@ -130,12 +134,12 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
 
     @Override
     public void showLoading() {
-
+        mProgressView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideLoading() {
-
+        mProgressView.setVisibility(View.GONE);
     }
 
     @Override
@@ -145,25 +149,32 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
     }
 
     @Override
-    public void setHomeEntryPointLinks(List<DisplayAppLink> appLinks) {
-        mNavigationMenu.clear();
-
+    public void setHomeEntryPointLinks(final List<DisplayAppLink> appLinks) {
         for (final DisplayAppLink displayAppLink : appLinks) {
             @DrawableRes int iconRes = getIconByAppLinkType(displayAppLink);
 
-            mNavigationMenu.add(displayAppLink.getTitle())
+            mNavigationMenu.add(R.id.menu_group, Menu.NONE, Menu.NONE, displayAppLink.getTitle())
                     .setIcon(iconRes)
                     .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            Fragment displayFragment = displayAppLink.createDisplayFragment(displayAppLink.getUrl());
-                            clearFragmentBackStack();
-                            replaceFragment(displayFragment);
+                            updateRootFragment(displayAppLink);
                             mDrawer.closeDrawers();
                             return true;
                         }
                     });
         }
+
+        DisplayAppLink displayAppLink = appLinks.get(0);
+        if (displayAppLink != null) {
+            updateRootFragment(displayAppLink);
+        }
+    }
+
+    private void updateRootFragment(DisplayAppLink displayAppLink) {
+        Fragment displayFragment = displayAppLink.createDisplayFragment(displayAppLink.getUrl());
+        clearFragmentBackStack();
+        replaceFragment(displayFragment);
     }
 
     @Override
@@ -218,6 +229,7 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
             return;
         }
 
+        mNavigationMenu.clear();
         clearFragmentBackStack();
 
         mSelectedSocialNetwork = selectedNetwork;
@@ -245,12 +257,16 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         }
     }
 
-    private void setHeader(SelectedSocialNetwork selectedNetwork) {
+    private void setHeader(final SelectedSocialNetwork selectedNetwork) {
         @StringRes int titleRes = selectedNetwork == SelectedSocialNetwork.NON ? R.string.non_greeting :
                 (selectedNetwork == SelectedSocialNetwork.VK ? R.string.vk_auth_greeting : R.string.twitter_auth_greeting);
         mHeaderGreetingTextView.setText(titleRes);
-
-        setSelectedHeaderIcon(selectedNetwork);
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                setSelectedHeaderIcon(selectedNetwork);
+            }
+        });
     }
 
     private void setSelectedHeaderIcon(SelectedSocialNetwork selectedNetwork) {

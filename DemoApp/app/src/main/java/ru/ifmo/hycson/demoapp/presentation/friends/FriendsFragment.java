@@ -25,6 +25,7 @@ public class FriendsFragment extends MvpFragment<FriendsContract.View, FriendsCo
         implements FriendsContract.View, FriendsAdapter.OnFriendClickListener {
 
     private static final String BUNDLE_FRIENDS_URL = "ru.ifmo.hycson.demoapp.presentation.friends.url";
+    private static final String BUNDLE_FRIENDS_PERSON_NAME = "ru.ifmo.hycson.demoapp.presentation.friends.person_name";
 
     private View mProgressView;
     private FriendsAdapter mAdapter;
@@ -33,6 +34,15 @@ public class FriendsFragment extends MvpFragment<FriendsContract.View, FriendsCo
         Fragment instance = new FriendsFragment();
         Bundle args = new Bundle();
         args.putString(BUNDLE_FRIENDS_URL, friendsUrl);
+        instance.setArguments(args);
+        return instance;
+    }
+
+    public static Fragment newInstance(String friendsUrl, String personName) {
+        Fragment instance = new FriendsFragment();
+        Bundle args = new Bundle();
+        args.putString(BUNDLE_FRIENDS_URL, friendsUrl);
+        args.putString(BUNDLE_FRIENDS_PERSON_NAME, personName);
         instance.setArguments(args);
         return instance;
     }
@@ -46,7 +56,12 @@ public class FriendsFragment extends MvpFragment<FriendsContract.View, FriendsCo
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle(getString(R.string.fragment_friends_title));
+        if (getArguments().containsKey(BUNDLE_FRIENDS_PERSON_NAME)) {
+            String personName = getArguments().getString(BUNDLE_FRIENDS_PERSON_NAME);
+            getActivity().setTitle(personName);
+        } else {
+            getActivity().setTitle(getString(R.string.fragment_friends_title, getString(R.string.my)));
+        }
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -67,6 +82,7 @@ public class FriendsFragment extends MvpFragment<FriendsContract.View, FriendsCo
         Fragment profileFragment = ProfileFragment.newInstance(profileData.getId());
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         fragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.fragmentContainer, profileFragment)
                 .addToBackStack(null)
                 .commit();

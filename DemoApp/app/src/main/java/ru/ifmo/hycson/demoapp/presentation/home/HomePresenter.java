@@ -67,6 +67,7 @@ public class HomePresenter extends MvpBasePresenter<HomeContract.View> implement
                             @Override
                             public void onSuccess(List<DisplayAppLink> appLinks) {
                                 if (isViewAttached()) {
+                                    getView().hideLoading();
                                     getView().setHomeEntryPointLinks(appLinks);
                                 }
                             }
@@ -74,6 +75,7 @@ public class HomePresenter extends MvpBasePresenter<HomeContract.View> implement
                             @Override
                             public void onError(Throwable error) {
                                 if (isViewAttached()) {
+                                    getView().hideLoading();
                                     getView().showError(error);
                                 }
                             }

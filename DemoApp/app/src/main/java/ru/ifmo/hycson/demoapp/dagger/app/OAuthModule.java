@@ -21,7 +21,7 @@ public class OAuthModule {
                 .apiKey(BuildConfig.VK_API_KEY)
                 .apiSecret(BuildConfig.VK_API_SECRET)
                 .callback(BuildConfig.VK_API_CALLBACK_URI)
-                .scope("wall,friends")
+                .scope("wall,friends,messages")
                 .build(VkontakteApi.instance());
     }
 

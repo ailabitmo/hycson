@@ -10,5 +10,7 @@
     <string name="profile_friends">Friends</string>
     <string name="profile_new_message">Write a message</string>
     <string name="fragment_profile_title">Profile</string>
-    <string name="fragment_friends_title">Friends</string>
+    <string name="my">My</string>
+    <string name="fragment_friends_title">%s friends</string>
+    <string name="new_message_dialog_title">Compose new message</string>
 </resources>

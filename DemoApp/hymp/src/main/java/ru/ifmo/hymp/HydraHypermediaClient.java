@@ -88,6 +88,34 @@ public class HydraHypermediaClient implements HypermediaClient {
                 });
     }
 
+    @Override
+    public Single<Resource> createResource(String url, Map<String, String> data) {
+        return ApiClient.getApiService().send(url, data)
+                .compose(new NetworkResultTransformer())
+                .flatMap(new Func1<Result<JsonObject>, Single<Bundle>>() {
+                    @Override
+                    public Single<Bundle> call(Result<JsonObject> resResult) {
+                        Headers headers = resResult.response().headers();
+                        final JsonObject res = resResult.response().body();
+
+                        return Single.zip(loadContextForResource(res), loadApiDoc(headers),
+                                new Func2<JsonObject, Result<JsonObject>, Bundle>() {
+                                    @Override
+                                    public Bundle call(JsonObject context, Result<JsonObject> apiDocRes) {
+                                        JsonObject apiDoc = apiDocRes.response().body();
+                                        return new Bundle(res, context, apiDoc);
+                                    }
+                                });
+                    }
+                })
+                .map(new Func1<Bundle, Resource>() {
+                    @Override
+                    public Resource call(Bundle bundle) {
+                        return parseToInternalResource(bundle);
+                    }
+                });
+    }
+
     /**
      * Load resource from API by url
      *

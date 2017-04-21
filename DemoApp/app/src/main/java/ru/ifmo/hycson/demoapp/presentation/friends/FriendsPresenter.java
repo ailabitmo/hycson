@@ -2,7 +2,6 @@ package ru.ifmo.hycson.demoapp.presentation.friends;
 
 import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 
-import java.util.Collection;
 import java.util.List;
 
 import ru.ifmo.hycson.demoapp.presentation.profile.entities.ProfileData;
@@ -40,7 +39,7 @@ public class FriendsPresenter extends MvpBasePresenter<FriendsContract.View> imp
                             @Override
                             public Observable<Resource> call(Resource resource) {
                                 Object members = resource.getPropertyMap().get(COLLECTION_MEMBER);
-                                if (members instanceof Collection) {
+                                if (members instanceof List) {
                                     return Observable.from((List<? extends Resource>) members);
                                 } else {
                                     return Observable.empty();

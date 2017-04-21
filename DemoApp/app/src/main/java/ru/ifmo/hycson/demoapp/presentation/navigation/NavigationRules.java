@@ -35,7 +35,7 @@ public class NavigationRules {
                 }
             case POST:
                 switch (linkOperation.getExpects()) {
-                    case "http://schema.org/Message":
+                    case "http://schema.org/text":
                         return new MessageCreateLink();
                 }
             default:

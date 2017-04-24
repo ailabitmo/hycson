@@ -112,7 +112,8 @@ public class TwitterAuthActivity extends BaseAuthActivity {
                     @Override
                     public void onNext(OAuth1AccessToken oAuth1AccessToken) {
                         LogHelper.d("onNext");
-                        handleSuccessfulResult(oAuth1AccessToken.getToken());
+                        String authString = oAuth1AccessToken.getToken() + "," + oAuth1AccessToken.getTokenSecret() + "," + BuildConfig.TWITTER_API_KEY + "," + BuildConfig.TWITTER_API_SECRET;
+                        handleSuccessfulResult(authString);
                     }
                 });
     }

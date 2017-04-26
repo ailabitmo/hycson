@@ -99,7 +99,7 @@ public class ProfileData {
             }
 
             if (TextUtils.isEmpty(mFamilyName)) {
-                throw new IllegalArgumentException("Person profile must have familyName ");
+                mFamilyName = "";
             }
 
             if (mAppLinks == null) {

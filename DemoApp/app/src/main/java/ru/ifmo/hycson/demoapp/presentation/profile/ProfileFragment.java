@@ -1,5 +1,6 @@
 package ru.ifmo.hycson.demoapp.presentation.profile;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,11 +26,13 @@ import java.util.Locale;
 
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
+import ru.ifmo.hycson.demoapp.presentation.OnLoggedOut;
 import ru.ifmo.hycson.demoapp.presentation.friends.FriendsFragment;
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.AppLink;
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.create.MessageCreateLink;
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.FriendsDisplayAppLink;
 import ru.ifmo.hycson.demoapp.presentation.profile.entities.ProfileData;
+import ru.ifmo.hymp.net.NetworkException;
 
 public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileContract.Presenter>
         implements ProfileContract.View {
@@ -43,6 +46,8 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
     private Button mNewMessageButtonView;
     private View mProgressView;
 
+    private OnLoggedOut mOnLoggedOut;
+
     @Nullable
     private AlertDialog mAlertDialog;
 
@@ -54,6 +59,16 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
         args.putString(BUNDLE_PROFILE_URL, profileUrl);
         instance.setArguments(args);
         return instance;
+    }
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (!(context instanceof OnLoggedOut)) {
+            throw new IllegalStateException("Activity should implement interface OnLoggedOut");
+        }
+        mOnLoggedOut = (OnLoggedOut) context;
     }
 
     @Override
@@ -127,6 +142,9 @@ public class ProfileFragment extends MvpFragment<ProfileContract.View, ProfileCo
     @Override
     public void showError(Throwable e) {
         Toast.makeText(getContext(), e.toString(), Toast.LENGTH_SHORT).show();
+        if (e instanceof NetworkException.NotAuthorized) {
+            mOnLoggedOut.loggedOut();
+        }
     }
 
     @Override

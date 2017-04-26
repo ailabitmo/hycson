@@ -74,14 +74,14 @@ public class ProfilePresenter extends MvpBasePresenter<ProfileContract.View> imp
                             @Override
                             public void onSuccess(Resource resource) {
                                 if (isViewAttached()) {
-//                                    getView().hideLoading(ProfileContract.View.LoadingType.MESSAGE);
+                                    getView().hideLoading(ProfileContract.View.LoadingType.MESSAGE);
                                 }
                             }
 
                             @Override
                             public void onError(Throwable error) {
                                 if (isViewAttached()) {
-//                                    getView().hideLoading(ProfileContract.View.LoadingType.MESSAGE);
+                                    getView().hideLoading(ProfileContract.View.LoadingType.MESSAGE);
                                     getView().showError(error);
                                 }
                             }

@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import ru.ifmo.hycson.demoapp.App;
 import ru.ifmo.hycson.demoapp.R;
 import ru.ifmo.hycson.demoapp.data.PreferencesManager;
+import ru.ifmo.hycson.demoapp.presentation.OnLoggedOut;
 import ru.ifmo.hycson.demoapp.presentation.auth.BaseAuthActivity;
 import ru.ifmo.hycson.demoapp.presentation.auth.SelectedSocialNetwork;
 import ru.ifmo.hycson.demoapp.presentation.auth.TwitterAuthActivity;
@@ -44,7 +45,7 @@ import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.MessagesDisp
 import ru.ifmo.hycson.demoapp.presentation.navigation.links.display.ProfileDisplayAppLink;
 
 public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Presenter>
-        implements HomeContract.View, View.OnClickListener {
+        implements HomeContract.View, View.OnClickListener, OnLoggedOut {
 
     private DrawerLayout mDrawer;
     private Menu mNavigationMenu;
@@ -165,16 +166,20 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
                     });
         }
 
+        mNavigationMenu.add(R.id.menu_group_exit, Menu.NONE, Menu.NONE, R.string.drawer_log_out_title)
+                .setIcon(R.drawable.ic_24dp_logout)
+                .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        loggedOut();
+                        return true;
+                    }
+                });
+
         DisplayAppLink displayAppLink = appLinks.get(0);
         if (displayAppLink != null) {
             updateRootFragment(displayAppLink);
         }
-    }
-
-    private void updateRootFragment(DisplayAppLink displayAppLink) {
-        Fragment displayFragment = displayAppLink.createDisplayFragment(displayAppLink.getUrl());
-        clearFragmentBackStack();
-        replaceFragment(displayFragment);
     }
 
     @Override
@@ -196,6 +201,13 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         }
     }
 
+    @Override
+    public void loggedOut() {
+        mPreferencesManager.saveAccessToken(mSelectedSocialNetwork.getKey(), "");
+        setSelectedSocialNetwork(SelectedSocialNetwork.NON);
+        setTitle(R.string.app_name);
+    }
+
     @DrawableRes
     private int getIconByAppLinkType(DisplayAppLink appLink) {
         if (appLink instanceof ProfileDisplayAppLink) {
@@ -207,13 +219,6 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         } else {
             return R.drawable.ic_drawer_default_24dp;
         }
-    }
-
-    private void replaceFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, fragment)
-                .commit();
     }
 
     private void onSocialNetworkIconClick(SelectedSocialNetwork selectedNetwork, Intent authIntent) {
@@ -231,6 +236,7 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
 
         mNavigationMenu.clear();
         clearFragmentBackStack();
+        removeFragment();
 
         mSelectedSocialNetwork = selectedNetwork;
         mPreferencesManager.saveSelectedSocialNetwork(selectedNetwork);
@@ -242,13 +248,19 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         newPresenter.attachView(this);
         setPresenter(newPresenter);
 
-        getPresenter().loadEntryPoint();
+        if (mSelectedSocialNetwork != SelectedSocialNetwork.NON) {
+            getPresenter().loadEntryPoint();
+        }
     }
 
-    private void clearFragmentBackStack() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    private void updateRootFragment(DisplayAppLink displayAppLink) {
+        Fragment displayFragment = displayAppLink.createDisplayFragment(displayAppLink.getUrl());
+        clearFragmentBackStack();
+        replaceFragment(displayFragment);
+    }
 
+    private void removeFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragmentContainer);
         if (currentFragment != null) {
             fragmentManager.beginTransaction()
@@ -257,10 +269,24 @@ public class HomeActivity extends MvpActivity<HomeContract.View, HomeContract.Pr
         }
     }
 
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
+    }
+
+    private void clearFragmentBackStack() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    }
+
     private void setHeader(final SelectedSocialNetwork selectedNetwork) {
         @StringRes int titleRes = selectedNetwork == SelectedSocialNetwork.NON ? R.string.non_greeting :
                 (selectedNetwork == SelectedSocialNetwork.VK ? R.string.vk_auth_greeting : R.string.twitter_auth_greeting);
+
         mHeaderGreetingTextView.setText(titleRes);
+
         new Handler().post(new Runnable() {
             @Override
             public void run() {

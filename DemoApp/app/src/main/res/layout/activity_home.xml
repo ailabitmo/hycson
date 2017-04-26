@@ -54,13 +54,7 @@
         app:headerLayout="@layout/other_drawer_header"
         app:menu="@menu/menu_drawer">
 
-        <ProgressBar
-            android:id="@+id/progressView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminateTint="@color/toolbarColor"
-            android:visibility="gone"/>
+        <include layout="@layout/shared_progress"/>
 
     </android.support.design.widget.NavigationView>
 
